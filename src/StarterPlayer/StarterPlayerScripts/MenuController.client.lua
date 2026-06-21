@@ -100,7 +100,8 @@ profileBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
-(rget("MatchFound") :: RemoteEvent).OnClientEvent:Connect(function(payload)
+local MatchFound = rget("MatchFound") :: RemoteEvent
+MatchFound.OnClientEvent:Connect(function(payload)
 	inQueue = false
 	status.Text = "Match found! Team " .. payload.team
 end)
