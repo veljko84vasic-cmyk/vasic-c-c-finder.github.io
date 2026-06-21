@@ -15,6 +15,9 @@ local Recoil = require(ReplicatedStorage.Modules.Recoil)
 local InputAdapter = require(script.Parent.InputAdapter)
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+local FireShot     = Remotes:WaitForChild("FireShot") :: RemoteEvent
+local MeleeSwing   = Remotes:WaitForChild("MeleeSwing") :: RemoteEvent
+local InspectEvent = Remotes:WaitForChild("InspectWeapon") :: RemoteEvent
 
 local player = Players.LocalPlayer
 
@@ -61,7 +64,7 @@ local function fire(now: number)
 	ammo[id].mag -= 1
 	lastFire = now
 
-	Remotes.FireShot:FireServer({
+	FireShot:FireServer({
 		weaponId = id,
 		origin = origin,
 		direction = dir,
@@ -101,7 +104,7 @@ local function swap(slot: "Primary" | "Secondary" | "Melee")
 end
 
 local function meleeSwing(kind: "Slash" | "Stab")
-	Remotes.MeleeSwing:FireServer({ knifeId = loadout.Melee, kind = kind })
+	MeleeSwing:FireServer({ knifeId = loadout.Melee, kind = kind })
 end
 
 InputAdapter.subscribe(function(s)
@@ -109,7 +112,7 @@ InputAdapter.subscribe(function(s)
 	if s.swapSecondary then swap("Secondary") end
 	if s.swapMelee then swap("Melee") end
 	if s.reload then reload() end
-	if s.inspect then Remotes.InspectWeapon:FireServer() end
+	if s.inspect then InspectEvent:FireServer() end
 end)
 
 RunService.Heartbeat:Connect(function()

@@ -17,6 +17,7 @@ local Constants = require(ReplicatedStorage.Modules.Constants)
 local InputAdapter = require(script.Parent.InputAdapter)
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+local MovementSnapshot = Remotes:WaitForChild("MovementSnapshot") :: RemoteEvent
 
 local player = Players.LocalPlayer
 
@@ -49,6 +50,25 @@ local function worldMoveDir(input): Vector3
 end
 
 local prevGrounded = true
+
+-- Disable Roblox's built-in character controller so it doesn't fight our
+-- velocity writes. We still rely on the engine for gravity, collisions, and
+-- step-up; we just own the horizontal velocity ourselves.
+local function tameHumanoid(humanoid: Humanoid)
+	humanoid.WalkSpeed = 0
+	humanoid.AutoRotate = false
+	humanoid.UseJumpPower = true
+	humanoid.JumpPower = 0   -- jumping is handled by our movement code
+end
+
+player.CharacterAdded:Connect(function(character)
+	local hum = character:WaitForChild("Humanoid") :: Humanoid
+	tameHumanoid(hum)
+end)
+if player.Character then
+	local hum = player.Character:FindFirstChildOfClass("Humanoid")
+	if hum then tameHumanoid(hum) end
+end
 
 RunService.RenderStepped:Connect(function(dt)
 	local root = getRoot(); if not root then return end
@@ -92,6 +112,6 @@ RunService.RenderStepped:Connect(function(dt)
 	-- Periodic snapshot to the server for anti-cheat.
 	if now - lastSnapshot > 0.1 then
 		lastSnapshot = now
-		Remotes.MovementSnapshot:FireServer({ position = root.Position })
+		MovementSnapshot:FireServer({ position = root.Position })
 	end
 end)

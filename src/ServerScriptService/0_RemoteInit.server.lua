@@ -1,12 +1,12 @@
 --!strict
--- Materialise the remotes declared in RemoteDefs into actual Instances.
--- Runs before any server service starts because it lives under
--- ReplicatedStorage and is `init.server.lua` (executed at start).
+-- Creates the RemoteEvent / RemoteFunction instances inside
+-- ReplicatedStorage.Remotes at boot. Runs before Main.server.lua because the
+-- filename sorts first alphabetically.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Defs = require(ReplicatedStorage.Modules.RemoteDefs)
 
-local container = script.Parent
+local container = ReplicatedStorage:WaitForChild("Remotes")
 
 local FUNCTION_REMOTES = {
 	GetProfile = true,

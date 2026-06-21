@@ -76,7 +76,7 @@ hitmarker.TextScaled = true
 hitmarker.TextTransparency = 1
 hitmarker.Parent = gui
 
-Remotes.HitConfirm.OnClientEvent:Connect(function(payload)
+(Remotes:WaitForChild("HitConfirm") :: RemoteEvent).OnClientEvent:Connect(function(payload)
 	hitmarker.TextColor3 = payload.headshot and Color3.fromRGB(255, 80, 80) or Color3.new(1, 1, 1)
 	hitmarker.TextTransparency = 0
 	task.delay(0.15, function()
@@ -84,7 +84,7 @@ Remotes.HitConfirm.OnClientEvent:Connect(function(payload)
 	end)
 end)
 
-Remotes.RankUpdate.OnClientEvent:Connect(function(payload)
+(Remotes:WaitForChild("RankUpdate") :: RemoteEvent).OnClientEvent:Connect(function(payload)
 	local tier
 	for _, t in RankSystem.Tiers do
 		if t.id == payload.tier then tier = t end

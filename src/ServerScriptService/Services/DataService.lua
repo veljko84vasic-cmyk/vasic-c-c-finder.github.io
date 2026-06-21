@@ -11,7 +11,20 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RankSystem = require(ReplicatedStorage.Modules.RankSystem)
 local Progression = require(ReplicatedStorage.Modules.Progression)
 
-local STORE = DataStoreService:GetDataStore("VasicProfiles_v1")
+-- DataStore is unavailable in Studio unless "Allow Studio Access to API
+-- Services" is on, and unavailable in unpublished places. Fall back to
+-- in-memory profiles so the game still runs.
+local STORE: DataStore? = nil
+do
+	local ok, store = pcall(function()
+		return DataStoreService:GetDataStore("VasicProfiles_v1")
+	end)
+	if ok then
+		STORE = store
+	else
+		warn("[DataService] DataStore unavailable; using in-memory profiles only.")
+	end
+end
 local AUTOSAVE = 120
 
 local DataService = {}
@@ -56,17 +69,21 @@ end
 function DataService.load(player: Player, seasonId: number): Profile
 	local key = "u_" .. player.UserId
 	local loaded
-	local ok, err = pcall(function()
-		loaded = STORE:UpdateAsync(key, function(old)
-			if old == nil then
-				return defaultProfile(player.UserId, seasonId)
-			end
-			old.lastLogin = os.time()
-			return old
+	if STORE then
+		local ok, err = pcall(function()
+			loaded = STORE:UpdateAsync(key, function(old)
+				if old == nil then
+					return defaultProfile(player.UserId, seasonId)
+				end
+				old.lastLogin = os.time()
+				return old
+			end)
 		end)
-	end)
-	if not ok or not loaded then
-		warn(("[DataService] load failed for %d: %s"):format(player.UserId, tostring(err)))
+		if not ok or not loaded then
+			warn(("[DataService] load failed for %d: %s"):format(player.UserId, tostring(err)))
+			loaded = defaultProfile(player.UserId, seasonId)
+		end
+	else
 		loaded = defaultProfile(player.UserId, seasonId)
 	end
 
@@ -82,6 +99,10 @@ end
 local function save(userId: number)
 	local profile = profiles[userId]
 	if not profile then return end
+	if not STORE then
+		dirty[userId] = nil
+		return
+	end
 	local key = "u_" .. userId
 	local ok, err = pcall(function()
 		STORE:UpdateAsync(key, function(_old)

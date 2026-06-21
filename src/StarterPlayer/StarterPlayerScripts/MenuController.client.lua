@@ -7,6 +7,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+local function rget(name: string): Instance
+	return Remotes:WaitForChild(name)
+end
 
 local player = Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
@@ -67,19 +70,19 @@ local inQueue = false
 local queueStarted = 0
 
 queueBtn.MouseButton1Click:Connect(function()
-	Remotes.JoinQueue:FireServer()
+	(rget("JoinQueue") :: RemoteEvent):FireServer()
 	inQueue = true
 	queueStarted = os.clock()
 end)
 
 leaveBtn.MouseButton1Click:Connect(function()
-	Remotes.LeaveQueue:FireServer()
+	(rget("LeaveQueue") :: RemoteEvent):FireServer()
 	inQueue = false
 	status.Text = "Left queue."
 end)
 
 lbBtn.MouseButton1Click:Connect(function()
-	local board = Remotes.GetLeaderboard:InvokeServer({ count = 10 })
+	local board = (rget("GetLeaderboard") :: RemoteFunction):InvokeServer({ count = 10 })
 	local lines = {"Top 10 (this season):"}
 	for i, e in board do
 		table.insert(lines, string.format("%d.  %d   %d MMR", i, e.userId, e.mmr))
@@ -88,7 +91,7 @@ lbBtn.MouseButton1Click:Connect(function()
 end)
 
 profileBtn.MouseButton1Click:Connect(function()
-	local profile = Remotes.GetProfile:InvokeServer()
+	local profile = (rget("GetProfile") :: RemoteFunction):InvokeServer()
 	if profile then
 		status.Text = string.format(
 			"XP %d | MMR %d | RD %d | Matches %d",
@@ -97,7 +100,7 @@ profileBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
-Remotes.MatchFound.OnClientEvent:Connect(function(payload)
+(rget("MatchFound") :: RemoteEvent).OnClientEvent:Connect(function(payload)
 	inQueue = false
 	status.Text = "Match found! Team " .. payload.team
 end)
