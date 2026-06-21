@@ -11,11 +11,12 @@ local RemoteDefs = require(ReplicatedStorage.Modules.RemoteDefs)
 local AntiCheat = require(script.Parent.AntiCheat)
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+local SnapshotRE = Remotes:WaitForChild("MovementSnapshot") :: RemoteEvent
 
 local MovementGuard = {}
 
 function MovementGuard.start()
-	Remotes.MovementSnapshot.OnServerEvent:Connect(function(player, payload)
+	SnapshotRE.OnServerEvent:Connect(function(player, payload)
 		if typeof(payload) ~= "table" then return end
 		local pos = payload.position
 		if typeof(pos) ~= "Vector3" then return end

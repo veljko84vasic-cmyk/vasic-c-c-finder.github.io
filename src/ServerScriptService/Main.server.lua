@@ -17,6 +17,9 @@ local MovementGuard     = require(script.Parent.Services.MovementGuard)
 local InventoryService  = require(script.Parent.Services.InventoryService)
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+local GetProfileRF       = Remotes:WaitForChild("GetProfile") :: RemoteFunction
+local GetLeaderboardRF   = Remotes:WaitForChild("GetLeaderboard") :: RemoteFunction
+local GetMatchHistoryRF  = Remotes:WaitForChild("GetMatchHistory") :: RemoteFunction
 
 DataService.start()
 CombatService.start()
@@ -36,18 +39,18 @@ for _, player in Players:GetPlayers() do
 	end)
 end
 
-Remotes.GetProfile.OnServerInvoke = function(player)
+GetProfileRF.OnServerInvoke = function(player)
 	return DataService.get(player.UserId)
 end
 
-Remotes.GetLeaderboard.OnServerInvoke = function(_player, payload)
+GetLeaderboardRF.OnServerInvoke = function(_player, payload)
 	payload = typeof(payload) == "table" and payload or {}
 	local seasonId = payload.seasonId
 	local count = math.clamp(tonumber(payload.count) or 100, 1, 100)
 	return LeaderboardService.top(seasonId, count)
 end
 
-Remotes.GetMatchHistory.OnServerInvoke = function(player)
+GetMatchHistoryRF.OnServerInvoke = function(player)
 	local profile = DataService.get(player.UserId)
 	return profile and profile.matchHistory or {}
 end

@@ -16,6 +16,10 @@ local AntiCheat = require(script.Parent.AntiCheat)
 local DataService = require(script.Parent.DataService)
 
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+local FireShotRE   = Remotes:WaitForChild("FireShot") :: RemoteEvent
+local MeleeRE      = Remotes:WaitForChild("MeleeSwing") :: RemoteEvent
+local HitConfirmRE = Remotes:WaitForChild("HitConfirm") :: RemoteEvent
+local DamageRE     = Remotes:WaitForChild("DamageTaken") :: RemoteEvent
 
 local CombatService = {}
 
@@ -47,7 +51,7 @@ local function applyDamage(victim: Player, attacker: Player, amount: number, hea
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if not humanoid or humanoid.Health <= 0 then return end
 	humanoid:TakeDamage(amount)
-	Remotes.DamageTaken:FireClient(victim, { from = attacker.UserId, dmg = amount, headshot = headshot })
+	DamageRE:FireClient(victim, { from = attacker.UserId, dmg = amount, headshot = headshot })
 	if humanoid.Health <= 0 then
 		DataService.bumpStat(attacker.UserId, "kills", 1)
 		DataService.bumpStat(victim.UserId, "deaths", 1)
@@ -101,7 +105,7 @@ function CombatService.handleFire(player: Player, payload: any)
 	local headshot = mult == Constants.HEADSHOT_MULTIPLIER
 	applyDamage(victim, player, damage, headshot)
 
-	Remotes.HitConfirm:FireClient(player, {
+	HitConfirmRE:FireClient(player, {
 		targetId = victim.UserId,
 		dmg = damage,
 		headshot = headshot,
@@ -152,8 +156,8 @@ function CombatService.handleMelee(player: Player, payload: any)
 end
 
 function CombatService.start()
-	Remotes.FireShot.OnServerEvent:Connect(CombatService.handleFire)
-	Remotes.MeleeSwing.OnServerEvent:Connect(CombatService.handleMelee)
+	FireShotRE.OnServerEvent:Connect(CombatService.handleFire)
+	MeleeRE.OnServerEvent:Connect(CombatService.handleMelee)
 	Players.PlayerRemoving:Connect(function(player)
 		recoilStates[player.UserId] = nil
 	end)
