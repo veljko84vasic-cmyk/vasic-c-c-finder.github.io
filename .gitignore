@@ -1,0 +1,11 @@
+*.rbxl
+*.rbxlx
+*.rbxl.lock
+*.rbxlx.lock
+/bin/
+/build/
+.DS_Store
+.vscode/
+sourcemap.json
+foreman.toml.lock
+aftman.lock
