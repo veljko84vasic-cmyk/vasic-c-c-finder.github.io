@@ -31,9 +31,13 @@ local function label(name: string, anchor: Vector2, pos: UDim2, size: UDim2): Te
 	return l
 end
 
-local ammoLabel = label("Ammo", Vector2.new(1, 1), UDim2.new(1, -20, 1, -20), UDim2.new(0, 220, 0, 60))
-local weaponLabel = label("Weapon", Vector2.new(1, 1), UDim2.new(1, -20, 1, -90), UDim2.new(0, 220, 0, 30))
-local rankLabel = label("Rank", Vector2.new(0, 0), UDim2.new(0, 20, 0, 20), UDim2.new(0, 240, 0, 40))
+local ammoLabel = label("Ammo", Vector2.new(1, 1), UDim2.new(1, -30, 1, -30), UDim2.new(0, 320, 0, 90))
+ammoLabel.Font = Enum.Font.GothamBlack
+ammoLabel.TextColor3 = Color3.fromRGB(255, 235, 100)
+local weaponLabel = label("Weapon", Vector2.new(1, 1), UDim2.new(1, -30, 1, -130), UDim2.new(0, 320, 0, 36))
+local speedLabel = label("Speed", Vector2.new(0, 1), UDim2.new(0, 30, 1, -30), UDim2.new(0, 200, 0, 40))
+speedLabel.TextColor3 = Color3.fromRGB(120, 220, 255)
+local rankLabel = label("Rank", Vector2.new(0, 0), UDim2.new(0, 20, 0, 20), UDim2.new(0, 280, 0, 50))
 rankLabel.Text = "Unranked"
 
 -- Crosshair
@@ -103,8 +107,17 @@ RunService.Heartbeat:Connect(function()
 		if a then
 			ammoLabel.Text = string.format("%d / %d", a.mag, a.reserve)
 		else
-			ammoLabel.Text = "--"
+			ammoLabel.Text = "knife"
 		end
 		weaponLabel.Text = string.format("[%s] %s", slot, id)
+	end
+
+	-- Speedometer — useful for feedback while learning bhop/slide.
+	local char = player.Character
+	local root = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if root then
+		local v = root.AssemblyLinearVelocity
+		local speed = math.sqrt(v.X * v.X + v.Z * v.Z)
+		speedLabel.Text = string.format("%.0f studs/s", speed)
 	end
 end)

@@ -7,22 +7,22 @@ Constants.TICK_RATE = 64
 Constants.STEP = 1 / Constants.TICK_RATE
 
 -- Movement (units in studs/s — Roblox default character ~16 studs/s walk)
-Constants.MAX_WALK_SPEED       = 18      -- ground cap when walking
-Constants.MAX_RUN_SPEED        = 22      -- ground cap when sprinting
-Constants.MAX_CROUCH_SPEED     = 9
-Constants.MAX_AIR_SPEED        = 1.2     -- per-tick air-accel speed cap (low = strafe-only gain)
-Constants.GROUND_ACCEL         = 110
-Constants.AIR_ACCEL            = 80      -- high air accel + low MAX_AIR_SPEED = Source feel
-Constants.FRICTION             = 7.5
-Constants.STOP_SPEED           = 4
-Constants.JUMP_IMPULSE         = 48
+Constants.MAX_WALK_SPEED       = 20
+Constants.MAX_RUN_SPEED        = 28      -- Rivals-ish sprint top speed
+Constants.MAX_CROUCH_SPEED     = 10
+Constants.MAX_AIR_SPEED        = 1.5     -- per-tick air-accel speed cap (low = strafe-only gain)
+Constants.GROUND_ACCEL         = 220     -- snappier start/stop
+Constants.AIR_ACCEL            = 120     -- high air accel + low MAX_AIR_SPEED = Source feel
+Constants.FRICTION             = 6.5
+Constants.STOP_SPEED           = 3
+Constants.JUMP_IMPULSE         = 55
 Constants.GRAVITY              = 196.2
-Constants.SLIDE_BOOST          = 6
-Constants.SLIDE_FRICTION       = 1.8
-Constants.SLIDE_MIN_ENTRY      = 18
-Constants.SLIDE_DURATION       = 0.9
-Constants.BHOP_WINDOW          = 0.06    -- seconds after landing to auto-jump cleanly
-Constants.SPEED_CAP_HARD       = 60      -- anti-cheat hard ceiling
+Constants.SLIDE_BOOST          = 12
+Constants.SLIDE_FRICTION       = 1.2
+Constants.SLIDE_MIN_ENTRY      = 14      -- can slide right out of a walk
+Constants.SLIDE_DURATION       = 1.1
+Constants.BHOP_WINDOW          = 0.08    -- seconds after landing to auto-jump cleanly
+Constants.SPEED_CAP_HARD       = 80      -- anti-cheat hard ceiling
 
 -- Crouch
 Constants.STAND_HIPHEIGHT      = 2.0

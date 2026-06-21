@@ -89,12 +89,18 @@ RunService.RenderStepped:Connect(function(dt)
 	state.onGround = isGrounded
 	prevGrounded = isGrounded
 
+	-- Rivals-style auto-sprint: any meaningful input counts as a sprint, with
+	-- Shift available as a "tactical walk" override (backwards-compatible
+	-- because the InputAdapter still exposes the sprint flag).
+	local moveMag = math.sqrt(input.moveX * input.moveX + input.moveY * input.moveY)
+	local autoSprint = moveMag > 0.2
+
 	Movement.step(state, {
 		moveDir = worldMoveDir(input),
 		jump = input.jump,
 		crouch = input.crouch,
 		slide = input.slide,
-		sprint = input.sprint,
+		sprint = autoSprint or input.sprint,
 	}, dt, now)
 
 	-- Push horizontal velocity back to the character; preserve engine Y.
