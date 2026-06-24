@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "vasic-client",
+  "version": "${version}",
+  "name": "Vasic Client",
+  "description": "Utility client mod with ClickGUI, HUD, and FPS optimizations",
+  "authors": ["Vasic"],
+  "contact": {},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.vasic.client.VasicClient"]
+  },
+  "mixins": ["vasic-client.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

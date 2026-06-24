@@ -1,11 +1,21 @@
-*.rbxl
-*.rbxlx
-*.rbxl.lock
-*.rbxlx.lock
-/bin/
-/build/
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Minecraft run directory
+run/
+
+# OS
 .DS_Store
-.vscode/
-sourcemap.json
-foreman.toml.lock
-aftman.lock
+Thumbs.db
+
+# Fabric
+remappedSrc/
