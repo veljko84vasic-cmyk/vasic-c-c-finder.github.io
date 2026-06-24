@@ -172,8 +172,7 @@ public class HudRenderer {
         FoodComponent foodComp = held.get(DataComponentTypes.FOOD);
         if (foodComp != null) {
             int hunger = foodComp.nutrition();
-            float saturation = foodComp.saturationModifier();
-            String text = "+" + hunger + " hunger  +" + String.format("%.1f", saturation) + " sat";
+            String text = "+" + hunger + " hunger";
             int w = tr.getWidth(text);
             int x = sw / 2 - w / 2;
             int y = sh - 56;
