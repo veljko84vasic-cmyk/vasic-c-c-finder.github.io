@@ -1,67 +1,44 @@
-# Vasic CC — Competitive Roblox FPS
+# Vasic Client — Minecraft 1.21.1 Utility Mod
 
-A scaffolded competitive FPS for Roblox inspired by Rivals, with Source-engine-style
-movement (bhop, air strafe, slide), a cosmetic skin system, ranked matchmaking with
-SBMM, leaderboards, and progression. Built to run on PC and mobile.
+A Fabric mod for Minecraft 1.21.1 with a ClickGUI, HUD, FPS optimizations, and 12 utility modules.
 
-## Project layout
+## How to use
 
-This repo uses [Rojo](https://rojo.space) to sync Luau source into Roblox Studio.
+- Press **Right Shift** to open the mod menu
+- Click modules to toggle them ON/OFF
+- Drag category headers to rearrange panels
 
-```
-default.project.json        Rojo project
-src/
-  ReplicatedStorage/
-    Modules/                Shared game logic (movement math, weapon configs,
-                            rank tiers, skin registry, etc.)
-    Remotes/                RemoteEvent / RemoteFunction definitions
-  ServerScriptService/
-    Services/               Authoritative services: matchmaking, rank, data,
-                            leaderboard, anti-cheat
-    Main.server.lua         Boot entry point
-  StarterPlayer/
-    StarterPlayerScripts/   Client controllers (movement, weapons, input, HUD)
-  StarterGui/               UI scaffolding
-```
+## Modules
 
-## What is implemented
+| Module | Key | What it does |
+| --- | --- | --- |
+| Fullbright | B | See in the dark |
+| NoFog | G | Remove fog |
+| Zoom | C | Zoom in like a spyglass |
+| Sprint | V | Auto-sprint |
+| ToggleSneak | Z | Hold sneak without holding the key |
+| NoSlowdown | N | No speed reduction when using items |
+| AutoTool | T | Auto-switch to best tool |
+| FastPlace | F | Remove block placement delay |
+| NoFall | J | Prevent fall damage |
+| FPSBoost | P | Kill particles + clouds for more FPS |
+| ArmorHUD | H | Show armor durability on screen |
+| Timer | U | Session timer |
 
-| System | State |
-| --- | --- |
-| Source-style movement (accel, friction, air strafe, bhop, slide, crouch) | Working |
-| Weapon framework (recoil pattern, spread, fire modes, reload, hit reg) | Working |
-| Knife framework (Karambit / Butterfly / Bayonet config + inspect hooks) | Working |
-| Cosmetic-only skin registry + inventory | Working |
-| Rank tiers, MMR (Glicko-2 lite), SBMM queue, season reset | Working |
-| Leaderboards (global + seasonal) via OrderedDataStore | Working |
-| Progression (XP curve, achievements, unlocks) | Working |
-| PC + mobile input adapter (touch buttons + look stick) | Working |
-| Anti-cheat hooks (speed / fire-rate / teleport sanity) | Working |
-| Maps, art assets, audio, finished UI polish | **Not included** — author in Studio |
+## HUD
 
-Gameplay logic is authoritative on the server. Client prediction for movement
-keeps input feeling responsive; the server validates kinematics each tick.
+Always shows: FPS counter, XYZ coordinates, facing direction, active module list.
 
-## Getting started
+## Building
 
-1. Install Rojo (`aftman add rojo-rbx/rojo` or `cargo install rojo`).
-2. `rojo serve` from the repo root.
-3. Open a fresh Baseplate in Roblox Studio and connect the Rojo plugin.
-4. Place map geometry under `Workspace/Maps/<MapName>` with a folder of
-   `SpawnPoint` parts per team and a `BombSites` folder for objective modes.
-5. Configure DataStore access in the game's place settings before publishing.
+1. Open in IntelliJ IDEA
+2. Import as Gradle project
+3. Run `genSources` from the Gradle panel
+4. Click Play to run Minecraft Client
+5. To build a .jar: run `build` from Gradle panel, find it in `build/libs/`
 
-## Cosmetic-only guarantee
+## Installing the .jar
 
-Skins live in `ReplicatedStorage/Modules/SkinRegistry.lua` and only carry
-visual fields (`viewmodel`, `worldmodel`, `tracer`, `muzzle`, `inspectAnim`).
-Weapon stats come exclusively from `WeaponConfigs.lua` keyed by weapon id,
-never by skin id — there is no place in the code path where a skin can
-modify damage, recoil, or movement.
-
-## Mobile support
-
-`InputAdapter` exposes a unified action set. On `UserInputService.TouchEnabled`
-devices it spawns a virtual left stick, right look stick, jump/crouch/slide
-buttons, fire / aim / reload / swap, and an auto-fire toggle. Sensitivity and
-dead-zones are persisted in player data.
+1. Install Fabric Loader for 1.21.1
+2. Drop `vasic-client-1.0.0.jar` into `.minecraft/mods/`
+3. Launch Minecraft with the Fabric profile
