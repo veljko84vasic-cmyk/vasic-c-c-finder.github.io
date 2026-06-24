@@ -1,17 +1,9 @@
 package com.vasic.client.module;
 
-import com.vasic.client.module.modules.misc.ArmorHud;
-import com.vasic.client.module.modules.misc.FPSBoost;
-import com.vasic.client.module.modules.misc.Timer;
-import com.vasic.client.module.modules.movement.NoSlowdown;
-import com.vasic.client.module.modules.movement.Sprint;
-import com.vasic.client.module.modules.movement.ToggleSneak;
-import com.vasic.client.module.modules.player.AutoTool;
-import com.vasic.client.module.modules.player.FastPlace;
-import com.vasic.client.module.modules.player.NoFall;
-import com.vasic.client.module.modules.render.Fullbright;
-import com.vasic.client.module.modules.render.NoFog;
-import com.vasic.client.module.modules.render.Zoom;
+import com.vasic.client.module.modules.misc.*;
+import com.vasic.client.module.modules.movement.*;
+import com.vasic.client.module.modules.player.*;
+import com.vasic.client.module.modules.render.*;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -24,8 +16,23 @@ public class ModuleManager {
     public void init() {
         // Render
         modules.add(new Fullbright());
-        modules.add(new NoFog());
         modules.add(new Zoom());
+        modules.add(new NoFog());
+        modules.add(new CustomCrosshair());
+        modules.add(new Hitbox());
+        modules.add(new FPSBoost());
+
+        // HUD
+        modules.add(new FPSDisplay());
+        modules.add(new CPSCounter());
+        modules.add(new PingDisplay());
+        modules.add(new KeystrokesModule());
+        modules.add(new CoordinatesDisplay());
+        modules.add(new ArmorHud());
+        modules.add(new SaturationDisplay());
+        modules.add(new FoodPreview());
+        modules.add(new ShieldStatus());
+        modules.add(new Timer());
 
         // Movement
         modules.add(new Sprint());
@@ -36,11 +43,6 @@ public class ModuleManager {
         modules.add(new AutoTool());
         modules.add(new FastPlace());
         modules.add(new NoFall());
-
-        // Misc
-        modules.add(new FPSBoost());
-        modules.add(new ArmorHud());
-        modules.add(new Timer());
     }
 
     public void onTick() {

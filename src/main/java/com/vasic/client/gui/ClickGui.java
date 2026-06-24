@@ -20,19 +20,26 @@ public class ClickGui extends Screen {
     @Override
     protected void init() {
         panels.clear();
-        int x = 20;
+        int totalWidth = Category.values().length * (CategoryPanel.WIDTH + 8) - 8;
+        int startX = (width - totalWidth) / 2;
+        int x = startX;
         for (Category category : Category.values()) {
-            panels.add(new CategoryPanel(category, x, 20));
-            x += CategoryPanel.WIDTH + 10;
+            panels.add(new CategoryPanel(category, x, 40));
+            x += CategoryPanel.WIDTH + 8;
         }
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
+        // Dark overlay
+        context.fill(0, 0, width, height, 0xB0000000);
 
-        context.drawTextWithShadow(textRenderer, VasicClient.NAME + " v" + VasicClient.VERSION,
-                4, 4, 0xFFAAAAAA);
+        // Title bar
+        String title = VasicClient.NAME;
+        String version = "v" + VasicClient.VERSION;
+        context.drawTextWithShadow(textRenderer, title, width / 2 - textRenderer.getWidth(title) / 2, 12, 0xFF26C6DA);
+        context.drawTextWithShadow(textRenderer, version,
+                width / 2 + textRenderer.getWidth(title) / 2 + 4, 12, 0xFF666666);
 
         for (CategoryPanel panel : panels) {
             panel.render(context, mouseX, mouseY, textRenderer);

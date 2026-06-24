@@ -4,12 +4,12 @@ import com.vasic.client.module.Category;
 import com.vasic.client.module.Module;
 import org.lwjgl.glfw.GLFW;
 
-public class Timer extends Module {
+public class FoodPreview extends Module {
 
     private static boolean active = false;
 
-    public Timer() {
-        super("Timer", "Show session timer", Category.HUD, GLFW.GLFW_KEY_U);
+    public FoodPreview() {
+        super("FoodPreview", "Show food restore amount on hunger bar", Category.HUD, GLFW.GLFW_KEY_UNKNOWN);
     }
 
     @Override

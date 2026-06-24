@@ -4,12 +4,12 @@ import com.vasic.client.module.Category;
 import com.vasic.client.module.Module;
 import org.lwjgl.glfw.GLFW;
 
-public class Timer extends Module {
+public class SaturationDisplay extends Module {
 
     private static boolean active = false;
 
-    public Timer() {
-        super("Timer", "Show session timer", Category.HUD, GLFW.GLFW_KEY_U);
+    public SaturationDisplay() {
+        super("Saturation", "Show saturation level", Category.HUD, GLFW.GLFW_KEY_UNKNOWN);
     }
 
     @Override

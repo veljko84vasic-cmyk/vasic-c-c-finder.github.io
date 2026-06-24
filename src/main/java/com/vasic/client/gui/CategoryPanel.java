@@ -11,8 +11,8 @@ import java.util.List;
 
 public class CategoryPanel {
 
-    public static final int WIDTH = 120;
-    private static final int HEADER_HEIGHT = 22;
+    public static final int WIDTH = 140;
+    private static final int HEADER_HEIGHT = 26;
 
     private final Category category;
     private final List<ModuleButton> buttons = new ArrayList<>();
@@ -34,16 +34,25 @@ public class CategoryPanel {
     }
 
     public void render(DrawContext context, int mouseX, int mouseY, TextRenderer textRenderer) {
-        context.fill(x, y, x + WIDTH, y + HEADER_HEIGHT, category.getColor());
-        context.drawCenteredTextWithShadow(textRenderer, category.getName(),
-                x + WIDTH / 2, y + 7, 0xFFFFFFFF);
+        // Panel background
+        int panelHeight = expanded ? HEADER_HEIGHT + buttons.size() * ModuleButton.HEIGHT + 4 : HEADER_HEIGHT;
+        context.fill(x, y, x + WIDTH, y + panelHeight, 0xE8101018);
 
-        String arrow = expanded ? "v" : ">";
-        context.drawTextWithShadow(textRenderer, arrow, x + WIDTH - 12, y + 7, 0xFFFFFFFF);
+        // Accent line at top
+        context.fill(x, y, x + WIDTH, y + 2, category.getColor());
+
+        // Header text
+        context.drawTextWithShadow(textRenderer, category.getName(),
+                x + 8, y + 9, 0xFFDDDDDD);
+
+        // Expand/collapse arrow
+        String arrow = expanded ? "-" : "+";
+        context.drawTextWithShadow(textRenderer, arrow,
+                x + WIDTH - 14, y + 9, 0xFF888888);
 
         if (expanded) {
-            int panelHeight = buttons.size() * ModuleButton.HEIGHT;
-            context.fill(x, y + HEADER_HEIGHT, x + WIDTH, y + HEADER_HEIGHT + panelHeight, 0xCC1A1A2E);
+            // Thin separator
+            context.fill(x + 6, y + HEADER_HEIGHT - 1, x + WIDTH - 6, y + HEADER_HEIGHT, 0xFF222233);
 
             for (ModuleButton button : buttons) {
                 button.render(context, x, y + HEADER_HEIGHT, WIDTH, mouseX, mouseY, textRenderer);

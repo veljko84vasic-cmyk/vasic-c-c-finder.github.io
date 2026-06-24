@@ -4,12 +4,13 @@ import com.vasic.client.module.Category;
 import com.vasic.client.module.Module;
 import org.lwjgl.glfw.GLFW;
 
-public class Timer extends Module {
+public class FPSDisplay extends Module {
 
-    private static boolean active = false;
+    private static boolean active = true;
 
-    public Timer() {
-        super("Timer", "Show session timer", Category.HUD, GLFW.GLFW_KEY_U);
+    public FPSDisplay() {
+        super("FPS", "Show FPS counter", Category.HUD, GLFW.GLFW_KEY_UNKNOWN);
+        toggle();
     }
 
     @Override

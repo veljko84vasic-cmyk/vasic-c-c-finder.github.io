@@ -9,20 +9,14 @@ public class ArmorHud extends Module {
     private static boolean active = false;
 
     public ArmorHud() {
-        super("ArmorHUD", "Show armor durability on screen", Category.MISC, GLFW.GLFW_KEY_H);
+        super("ArmorHUD", "Show armor durability on screen", Category.HUD, GLFW.GLFW_KEY_H);
     }
 
     @Override
-    public void onEnable() {
-        active = true;
-    }
+    public void onEnable() { active = true; }
 
     @Override
-    public void onDisable() {
-        active = false;
-    }
+    public void onDisable() { active = false; }
 
-    public static boolean isActive() {
-        return active;
-    }
+    public static boolean isActive() { return active; }
 }
