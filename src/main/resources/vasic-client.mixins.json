@@ -3,12 +3,8 @@
   "package": "com.vasic.client.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "GameRendererMixin",
-    "LightmapTextureManagerMixin",
-    "ClientPlayerEntityMixin",
     "MinecraftClientMixin",
-    "KeyboardMixin",
-    "ParticleManagerMixin"
+    "KeyboardMixin"
   ],
   "injectors": {
     "defaultRequire": 1

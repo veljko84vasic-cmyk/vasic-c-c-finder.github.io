@@ -6,23 +6,24 @@ import org.lwjgl.glfw.GLFW;
 
 public class NoFog extends Module {
 
-    private static boolean active = false;
+    private int originalDistance = 12;
 
     public NoFog() {
-        super("NoFog", "Remove fog rendering for better visibility", Category.RENDER, GLFW.GLFW_KEY_G);
+        super("NoFog", "Increase render distance to reduce fog effect", Category.RENDER, GLFW.GLFW_KEY_G);
     }
 
     @Override
     public void onEnable() {
-        active = true;
+        if (mc.options != null) {
+            originalDistance = mc.options.getViewDistance().getValue();
+            mc.options.getViewDistance().setValue(32);
+        }
     }
 
     @Override
     public void onDisable() {
-        active = false;
-    }
-
-    public static boolean isActive() {
-        return active;
+        if (mc.options != null) {
+            mc.options.getViewDistance().setValue(originalDistance);
+        }
     }
 }
