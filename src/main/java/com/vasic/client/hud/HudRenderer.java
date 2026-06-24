@@ -9,6 +9,8 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.item.Items;
 
 import java.util.List;
@@ -167,11 +169,11 @@ public class HudRenderer {
         ItemStack held = mc.player.getMainHandStack();
         if (held.isEmpty()) return;
 
-        var foodComp = held.getItem().getFoodComponent();
+        FoodComponent foodComp = held.get(DataComponentTypes.FOOD);
         if (foodComp != null) {
-            int hunger = foodComp.getHunger();
-            float saturation = foodComp.getSaturationModifier();
-            String text = "+" + hunger + " hunger  +" + String.format("%.1f", saturation * hunger * 2) + " sat";
+            int hunger = foodComp.nutrition();
+            float saturation = foodComp.saturationModifier();
+            String text = "+" + hunger + " hunger  +" + String.format("%.1f", saturation) + " sat";
             int w = tr.getWidth(text);
             int x = sw / 2 - w / 2;
             int y = sh - 56;
