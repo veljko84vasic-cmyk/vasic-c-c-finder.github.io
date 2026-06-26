@@ -13,7 +13,6 @@ function createWindow() {
     minHeight: 600,
     frame: false,
     backgroundColor: '#07060f',
-    icon: path.join(__dirname, 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -27,24 +26,19 @@ function createWindow() {
 app.whenReady().then(createWindow);
 app.on('window-all-closed', () => app.quit());
 
-// Find the project directory (go up from launcher folder)
 function getProjectDir() {
   return path.resolve(__dirname, '..');
 }
 
-// Find Fabric config directory
 function getConfigPath() {
   const projectDir = getProjectDir();
-  const runConfig = path.join(projectDir, 'run', 'config', 'vasic-client.json');
-  return runConfig;
+  return path.join(projectDir, 'run', 'config', 'vasic-client.json');
 }
 
-// Save username to mod config before launch
 function saveUsername(username) {
   const configPath = getConfigPath();
   const configDir = path.dirname(configPath);
 
-  // Create directories if needed
   fs.mkdirSync(configDir, { recursive: true });
 
   let config = {};
@@ -63,34 +57,45 @@ function saveUsername(username) {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
 
-// Launch Minecraft via Gradle
 ipcMain.handle('launch-game', async (event, username) => {
   try {
-    saveUsername(username);
-
     const projectDir = getProjectDir();
-    const isWindows = process.platform === 'win32';
-    const gradlew = isWindows ? 'gradlew.bat' : './gradlew';
+    const gradlewPath = path.join(projectDir, 'gradlew.bat');
 
-    const child = spawn(gradlew, ['runClient'], {
+    if (!fs.existsSync(gradlewPath)) {
+      const msg = 'gradlew.bat not found at: ' + gradlewPath;
+      mainWindow.webContents.send('launch-error', msg);
+      return { success: false, error: msg };
+    }
+
+    saveUsername(username);
+    mainWindow.webContents.send('log-message', 'Project dir: ' + projectDir);
+    mainWindow.webContents.send('log-message', 'Starting gradlew.bat runClient...');
+
+    const child = spawn('cmd.exe', ['/c', 'gradlew.bat', 'runClient'], {
       cwd: projectDir,
-      shell: true,
-      detached: true,
-      stdio: 'pipe'
+      stdio: 'pipe',
+      env: { ...process.env }
     });
 
     child.stdout.on('data', (data) => {
-      const line = data.toString().trim();
-      if (line) mainWindow.webContents.send('log-message', line);
+      const lines = data.toString().split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed) mainWindow.webContents.send('log-message', trimmed);
+      }
     });
 
     child.stderr.on('data', (data) => {
-      const line = data.toString().trim();
-      if (line) mainWindow.webContents.send('log-message', line);
+      const lines = data.toString().split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed) mainWindow.webContents.send('log-message', trimmed);
+      }
     });
 
     child.on('error', (err) => {
-      mainWindow.webContents.send('launch-error', err.message);
+      mainWindow.webContents.send('launch-error', 'Process error: ' + err.message);
     });
 
     child.on('close', (code) => {
@@ -99,11 +104,11 @@ ipcMain.handle('launch-game', async (event, username) => {
 
     return { success: true };
   } catch (err) {
+    mainWindow.webContents.send('launch-error', err.message);
     return { success: false, error: err.message };
   }
 });
 
-// Window controls
 ipcMain.handle('window-minimize', () => mainWindow.minimize());
 ipcMain.handle('window-maximize', () => {
   if (mainWindow.isMaximized()) mainWindow.unmaximize();
