@@ -22,6 +22,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 
 import java.util.*;
+import java.util.Map;
 
 public class HudRenderer {
 
@@ -46,6 +47,14 @@ public class HudRenderer {
         elements.put("keystrokes", new HudElement("keystrokes", "Keystrokes", "Keystrokes", 8, sh / 2 - 48, 70, 96));
         elements.put("modules", new HudElement("modules", "Modules", "", sw - 90, 4, 88, 120));
         elements.put("crosshair", new HudElement("crosshair", "Crosshair", "Crosshair", sw / 2 - 7, sh / 2 - 7, 15, 15));
+
+        Map<String, int[]> saved = VasicClient.getInstance().getConfigManager().getSavedHudPositions();
+        for (Map.Entry<String, int[]> entry : saved.entrySet()) {
+            HudElement el = elements.get(entry.getKey());
+            if (el != null) {
+                el.setPosition(entry.getValue()[0], entry.getValue()[1]);
+            }
+        }
     }
 
     public Collection<HudElement> getElements() {
@@ -216,6 +225,25 @@ public class HudRenderer {
         int mid = gs / 2;
         int cx = el.getX() + el.getWidth() / 2;
         int cy = el.getY() + el.getHeight() / 2;
+
+        if (CustomCrosshair.hasOutline()) {
+            int[][] dirs = {{-1,0},{1,0},{0,-1},{0,1},{-1,-1},{-1,1},{1,-1},{1,1}};
+            for (int r = 0; r < gs; r++) {
+                for (int c = 0; c < gs; c++) {
+                    if (CustomCrosshair.getPixel(r, c) != 0) {
+                        for (int[] d : dirs) {
+                            int nr = r + d[0], nc = c + d[1];
+                            if (nr >= 0 && nr < gs && nc >= 0 && nc < gs && CustomCrosshair.getPixel(nr, nc) == 0) {
+                                int px = cx + (nc - mid);
+                                int py = cy + (nr - mid);
+                                ctx.fill(px, py, px + 1, py + 1, 0xCC000000);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         for (int r = 0; r < gs; r++) {
             for (int c = 0; c < gs; c++) {
                 int pixel = CustomCrosshair.getPixel(r, c);

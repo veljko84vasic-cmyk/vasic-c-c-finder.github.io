@@ -46,7 +46,8 @@ public class CrosshairSettingsScreen extends Screen {
     private int swatchTopY()  { return palY + 14; }
     private int selectedY()   { return swatchTopY() + ((PALETTE.length + SW_COLS - 1) / SW_COLS) * (SWATCH + SW_GAP) + 6; }
     private int rgbTopY()     { return selectedY() + 18; }
-    private int btnTopY()     { return rgbTopY() + 3 * 18 + 6; }
+    private int outlineY()    { return rgbTopY() + 3 * 18 + 4; }
+    private int btnTopY()     { return outlineY() + 20; }
     private int previewTopY() { return btnTopY() + 22; }
 
     @Override
@@ -57,6 +58,7 @@ public class CrosshairSettingsScreen extends Screen {
         renderGrid(ctx, mouseX, mouseY);
         renderPalette(ctx);
         renderRGBSliders(ctx);
+        renderOutlineToggle(ctx, mouseX, mouseY);
         renderButtons(ctx, mouseX, mouseY);
         renderLivePreview(ctx);
 
@@ -123,6 +125,16 @@ public class CrosshairSettingsScreen extends Screen {
         ctx.drawTextWithShadow(textRenderer, String.valueOf(val), sx + sw + 3, y + 1, 0xFF999999);
     }
 
+    private void renderOutlineToggle(DrawContext ctx, int mx, int my) {
+        int y = outlineY();
+        boolean on = CustomCrosshair.hasOutline();
+        int bw = 104;
+        boolean hov = mx >= palX && mx <= palX + bw && my >= y && my <= y + 14;
+        ctx.fill(palX, y, palX + bw, y + 14, hov ? 0x50FFFFFF : 0x25FFFFFF);
+        String text = "Outline: " + (on ? "ON" : "OFF");
+        ctx.drawTextWithShadow(textRenderer, text, palX + 5, y + 3, on ? 0xFF44FF44 : 0xFFFF4444);
+    }
+
     private void renderButtons(DrawContext ctx, int mx, int my) {
         int y = btnTopY();
         drawBtn(ctx, "Clear", palX, y, 48, 14, mx, my);
@@ -146,6 +158,27 @@ public class CrosshairSettingsScreen extends Screen {
         int pcx = palX + pvSize / 2 + 10;
         ctx.fill(pcx - pvSize / 2 - 1, y - 1, pcx + pvSize / 2 + 1, y + pvSize + 1, 0xFF444444);
         ctx.fill(pcx - pvSize / 2, y, pcx + pvSize / 2, y + pvSize, 0xFF111111);
+
+        int mid = GS / 2;
+        if (CustomCrosshair.hasOutline()) {
+            int[][] dirs = {{-1,0},{1,0},{0,-1},{0,1},{-1,-1},{-1,1},{1,-1},{1,1}};
+            for (int r = 0; r < GS; r++) {
+                for (int c = 0; c < GS; c++) {
+                    if (CustomCrosshair.getPixel(r, c) != 0) {
+                        for (int[] d : dirs) {
+                            int nr = r + d[0], nc = c + d[1];
+                            if (nr >= 0 && nr < GS && nc >= 0 && nc < GS && CustomCrosshair.getPixel(nr, nc) == 0) {
+                                int px1 = pcx - pvSize / 2 + nc * pvSize / GS;
+                                int py1 = y + nr * pvSize / GS;
+                                int px2 = pcx - pvSize / 2 + (nc + 1) * pvSize / GS;
+                                int py2 = y + (nr + 1) * pvSize / GS;
+                                if (px2 > px1 && py2 > py1) ctx.fill(px1, py1, px2, py2, 0xCC000000);
+                            }
+                        }
+                    }
+                }
+            }
+        }
         for (int r = 0; r < GS; r++) {
             for (int c = 0; c < GS; c++) {
                 int pixel = CustomCrosshair.getPixel(r, c);
@@ -185,6 +218,7 @@ public class CrosshairSettingsScreen extends Screen {
             }
             if (clickPalette(mx, my)) return true;
             if (clickSliders(mx, my)) return true;
+            if (clickOutline(mx, my)) return true;
             if (clickButtons(mx, my)) return true;
         }
         return super.mouseClicked(mx, my, btn);
@@ -216,6 +250,15 @@ public class CrosshairSettingsScreen extends Screen {
                 applySlider(i, mx, sx, sw);
                 return true;
             }
+        }
+        return false;
+    }
+
+    private boolean clickOutline(double mx, double my) {
+        int y = outlineY();
+        if (mx >= palX && mx <= palX + 104 && my >= y && my <= y + 14) {
+            CustomCrosshair.setOutline(!CustomCrosshair.hasOutline());
+            return true;
         }
         return false;
     }

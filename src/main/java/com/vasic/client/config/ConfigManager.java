@@ -14,14 +14,21 @@ import net.fabricmc.loader.api.FabricLoader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ConfigManager {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private final Path configFile;
+    private final Map<String, int[]> savedHudPositions = new HashMap<>();
 
     public ConfigManager() {
         configFile = FabricLoader.getInstance().getConfigDir().resolve("vasic-client.json");
+    }
+
+    public Map<String, int[]> getSavedHudPositions() {
+        return savedHudPositions;
     }
 
     public void save() {
@@ -47,7 +54,7 @@ public class ConfigManager {
         }
         root.add("hud", hud);
 
-        // Save crosshair pixel grid
+        // Save crosshair pixel grid + outline
         JsonObject crosshair = new JsonObject();
         int[][] pixels = CustomCrosshair.getPixels();
         JsonArray grid = new JsonArray();
@@ -59,6 +66,7 @@ public class ConfigManager {
             grid.add(rowArr);
         }
         crosshair.add("grid", grid);
+        crosshair.addProperty("outline", CustomCrosshair.hasOutline());
         root.add("crosshair", crosshair);
 
         // Save username
@@ -70,7 +78,7 @@ public class ConfigManager {
         try {
             Files.writeString(configFile, GSON.toJson(root));
         } catch (IOException e) {
-            System.err.println("[Vasic Client] Failed to save config: " + e.getMessage());
+            System.err.println("[NebulaX] Failed to save config: " + e.getMessage());
         }
     }
 
@@ -97,39 +105,41 @@ public class ConfigManager {
                 }
             }
 
-            // Load HUD positions
+            // Store HUD positions to apply later when elements are created
             if (root.has("hud")) {
                 JsonObject hud = root.getAsJsonObject("hud");
-                for (HudElement el : VasicClient.getInstance().getHudRenderer().getElements()) {
-                    if (hud.has(el.getId())) {
-                        JsonObject obj = hud.getAsJsonObject(el.getId());
-                        el.setPosition(obj.get("x").getAsInt(), obj.get("y").getAsInt());
-                    }
+                for (String key : hud.keySet()) {
+                    JsonObject obj = hud.getAsJsonObject(key);
+                    savedHudPositions.put(key, new int[]{obj.get("x").getAsInt(), obj.get("y").getAsInt()});
                 }
             }
+
             // Load username
             if (root.has("username")) {
                 VasicClient.setCustomUsername(root.get("username").getAsString());
             }
 
-            // Load crosshair pixel grid
+            // Load crosshair pixel grid + outline
             if (root.has("crosshair")) {
                 JsonObject ch = root.getAsJsonObject("crosshair");
                 if (ch.has("grid")) {
                     JsonArray grid = ch.getAsJsonArray("grid");
                     int gs = CustomCrosshair.GRID_SIZE;
-                    int[][] pixels = new int[gs][gs];
+                    int[][] px = new int[gs][gs];
                     for (int r = 0; r < Math.min(gs, grid.size()); r++) {
                         JsonArray row = grid.get(r).getAsJsonArray();
                         for (int c = 0; c < Math.min(gs, row.size()); c++) {
-                            pixels[r][c] = row.get(c).getAsInt();
+                            px[r][c] = row.get(c).getAsInt();
                         }
                     }
-                    CustomCrosshair.setPixels(pixels);
+                    CustomCrosshair.setPixels(px);
+                }
+                if (ch.has("outline")) {
+                    CustomCrosshair.setOutline(ch.get("outline").getAsBoolean());
                 }
             }
         } catch (Exception e) {
-            System.err.println("[Vasic Client] Failed to load config: " + e.getMessage());
+            System.err.println("[NebulaX] Failed to load config: " + e.getMessage());
         }
     }
 }

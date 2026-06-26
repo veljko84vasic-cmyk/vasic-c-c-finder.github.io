@@ -9,6 +9,7 @@ public class CustomCrosshair extends Module {
     public static final int GRID_SIZE = 15;
     private static boolean active = false;
     private static int[][] pixels = new int[GRID_SIZE][GRID_SIZE];
+    private static boolean outline = true;
 
     public CustomCrosshair() {
         super("Crosshair", "Custom crosshair overlay", Category.RENDER, GLFW.GLFW_KEY_UNKNOWN);
@@ -22,6 +23,8 @@ public class CustomCrosshair extends Module {
     public void onDisable() { active = false; }
 
     public static boolean isActive() { return active; }
+    public static boolean hasOutline() { return outline; }
+    public static void setOutline(boolean v) { outline = v; }
 
     public static int[][] getPixels() { return pixels; }
 

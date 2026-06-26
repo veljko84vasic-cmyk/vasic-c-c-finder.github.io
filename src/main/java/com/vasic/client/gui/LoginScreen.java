@@ -77,8 +77,8 @@ public class LoginScreen extends Screen {
         drawBorder(ctx, reqX, reqY, reqW, 16, 0x59FF6BD6);
         ctx.drawTextWithShadow(textRenderer, reqTag, reqX + 10, reqY + 4, 0xFFFF6BD6);
 
-        // Brand name "VASIC"
-        String brand = "VASIC";
+        // Brand name
+        String brand = "NEBULAX";
         int brandW = textRenderer.getWidth(brand);
         // Draw it bigger by centering
         ctx.drawTextWithShadow(textRenderer, brand, width / 2 - brandW / 2, cardY + 40, 0xFF26C6DA);
