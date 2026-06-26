@@ -7,7 +7,7 @@
   :root {
     --bg-deep: #07060f;
     --bg-panel: #0e0c1c;
-    --bg-panel-raised: #14112450;
+    --bg-panel-raised: rgba(20,17,36,0.31);
     --border-soft: #2a2440;
     --aurora-purple: #a66bff;
     --aurora-teal: #2bd9c9;
@@ -31,7 +31,49 @@
     position: relative;
   }
 
-  /* Ambient aurora background */
+  /* Title bar */
+  .titlebar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 32px;
+    background: rgba(7,6,15,0.95);
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+    -webkit-app-region: drag;
+    padding: 0 8px;
+  }
+  .titlebar-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    letter-spacing: 1px;
+    margin-left: 8px;
+  }
+  .titlebar-controls {
+    display: flex;
+    gap: 2px;
+    -webkit-app-region: no-drag;
+  }
+  .titlebar-btn {
+    width: 36px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+  .titlebar-btn:hover { background: rgba(255,255,255,0.08); }
+  .titlebar-btn.close:hover { background: #e81123; color: white; }
+
+  /* Aurora background */
   .aurora-bg {
     position: fixed;
     inset: 0;
@@ -80,6 +122,7 @@
     z-index: 1;
     display: flex;
     height: 100vh;
+    padding-top: 32px;
   }
 
   /* Sidebar */
@@ -94,9 +137,7 @@
     backdrop-filter: blur(6px);
   }
 
-  .brand {
-    margin-bottom: 36px;
-  }
+  .brand { margin-bottom: 36px; }
   .brand-name {
     font-size: 22px;
     font-weight: 800;
@@ -218,7 +259,7 @@
   }
   .card-value { font-size: 15px; color: var(--text-primary); }
 
-  select, .select-display {
+  select {
     width: 100%;
     background: rgba(0,0,0,0.3);
     border: 1px solid var(--aurora-purple);
@@ -238,12 +279,13 @@
     cursor: pointer;
     transition: transform .12s ease, box-shadow .15s ease;
   }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-primary {
     background: linear-gradient(90deg, var(--aurora-purple), var(--aurora-teal));
     color: #0a0816;
     box-shadow: 0 0 22px -4px var(--glow-purple);
   }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 28px -2px var(--glow-purple); }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 0 28px -2px var(--glow-purple); }
   .btn-ghost {
     background: rgba(255,255,255,0.04);
     border: 1px solid var(--border-soft);
@@ -251,7 +293,49 @@
   }
   .btn-ghost:hover { color: var(--text-primary); border-color: var(--aurora-purple); }
 
+  .btn-launch {
+    background: linear-gradient(90deg, var(--aurora-purple), var(--aurora-teal));
+    color: #0a0816;
+    box-shadow: 0 0 22px -4px var(--glow-purple);
+    border: none;
+    border-radius: 12px;
+    padding: 14px 36px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s ease;
+    letter-spacing: 0.5px;
+  }
+  .btn-launch:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 32px -2px var(--glow-purple); }
+  .btn-launch:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-launch.launching {
+    animation: pulse-glow 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 22px -4px var(--glow-purple); }
+    50% { box-shadow: 0 0 40px -2px var(--glow-teal); }
+  }
+
   .hero-actions { display: flex; gap: 12px; margin-bottom: 22px; }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    min-height: 20px;
+  }
+  .status-bar .status-indicator {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-bar .status-indicator.ready { background: var(--aurora-teal); box-shadow: 0 0 6px var(--aurora-teal); }
+  .status-bar .status-indicator.launching { background: var(--aurora-purple); box-shadow: 0 0 6px var(--aurora-purple); animation: blink 1s infinite; }
+  .status-bar .status-indicator.running { background: #44ff44; box-shadow: 0 0 6px #44ff44; }
+  .status-bar .status-indicator.error { background: var(--aurora-pink); box-shadow: 0 0 6px var(--aurora-pink); }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
   /* Module grid */
   .module-grid {
@@ -284,6 +368,12 @@
   .module-card.on .toggle-led {
     background: var(--aurora-teal);
     box-shadow: 0 0 6px var(--aurora-teal);
+  }
+  .module-desc {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+    margin-top: 4px;
   }
 
   /* Versions grid */
@@ -322,9 +412,10 @@
     max-height: 420px;
     overflow-y: auto;
   }
-  .log-line { color: var(--text-secondary); padding: 4px 0; }
+  .log-line { color: var(--text-secondary); padding: 4px 0; word-break: break-all; }
   .log-line .ts { color: var(--aurora-teal); margin-right: 8px; }
   .log-line.highlight { color: var(--text-primary); }
+  .log-line.error { color: var(--aurora-pink); }
 
   /* Account */
   .account-row { display: flex; align-items: center; gap: 10px; }
@@ -352,6 +443,7 @@
     align-items: center;
     justify-content: center;
     background: var(--bg-deep);
+    padding-top: 32px;
   }
   .login-screen.hidden { display: none; }
   .login-card {
@@ -532,6 +624,16 @@
 </head>
 <body>
 
+<!-- TITLE BAR (frameless window) -->
+<div class="titlebar">
+  <span class="titlebar-label">NEBULAX LAUNCHER</span>
+  <div class="titlebar-controls">
+    <button class="titlebar-btn" id="btn-minimize">&#x2013;</button>
+    <button class="titlebar-btn" id="btn-maximize">&#x25A1;</button>
+    <button class="titlebar-btn close" id="btn-close">&#x2715;</button>
+  </div>
+</div>
+
 <div class="aurora-bg"><div class="star-field"></div></div>
 
 <!-- LOGIN GATE -->
@@ -554,7 +656,8 @@
     <button class="btn btn-ghost" style="width:100%;" id="guest-login-btn">Continue as Guest</button>
 
     <div class="login-footnote">
-      Microsoft login isn't wired up yet — it needs a registered app and real OAuth, planned for a later build. Username and Guest are fully working for now.
+      Microsoft login planned for a later build.<br>
+      Username and Guest are fully working.
     </div>
   </div>
 </div>
@@ -567,6 +670,7 @@
     </div>
     <nav id="nav">
       <button class="nav-item active" data-page="home"><span class="dot"></span>Home</button>
+      <button class="nav-item" data-page="client"><span class="dot"></span>Client</button>
       <button class="nav-item" data-page="marketplace"><span class="dot"></span>Marketplace</button>
       <button class="nav-item" data-page="versions"><span class="dot"></span>Versions</button>
       <button class="nav-item" data-page="settings"><span class="dot"></span>Settings</button>
@@ -577,7 +681,7 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="pill"><span class="status-dot"></span><span id="topbar-username">Logged in as MicrosoftUser</span></div>
+      <div class="pill"><span class="status-dot"></span><span id="topbar-username">Logged in as Guest</span></div>
     </div>
 
     <!-- HOME -->
@@ -585,24 +689,39 @@
       <h1 class="page-title">NebulaX</h1>
       <p class="page-subtitle">Premium Minecraft Client Experience</p>
       <div class="hero-actions">
-        <button class="btn btn-primary">Launch Client</button>
-        <button class="btn btn-ghost" data-goto="marketplace">Marketplace</button>
+        <button class="btn-launch" id="launch-btn">Launch Game</button>
+        <button class="btn btn-ghost" data-goto="client">Modules</button>
       </div>
-      <div class="card">
+      <div class="status-bar" id="status-bar">
+        <div class="status-indicator ready"></div>
+        <span id="status-text">Ready to launch</span>
+      </div>
+      <div class="card" style="margin-top: 18px;">
         <div class="card-row">
           <div>
             <div class="card-label">Status</div>
-            <div class="card-value">Ready</div>
+            <div class="card-value" id="game-status">Ready</div>
           </div>
           <div>
             <div class="card-label">Version</div>
             <div class="card-value">1.21.1</div>
           </div>
+          <div>
+            <div class="card-label">Player</div>
+            <div class="card-value" id="home-player-name">Guest</div>
+          </div>
         </div>
       </div>
       <p style="font-size:13px; color:var(--text-tertiary); margin-top:18px;">
-        Tip: once you're in-game, press <strong style="color:var(--aurora-teal);">Right Shift</strong> to open the NebulaX HUD settings.
+        Tip: once you're in-game, press <strong style="color:var(--aurora-teal);">Right Shift</strong> to open the NebulaX mod menu.
       </p>
+    </div>
+
+    <!-- CLIENT MODULES -->
+    <div class="page" id="page-client">
+      <h1 class="page-title">Client Modules</h1>
+      <p class="page-subtitle">NebulaX Built-in Features</p>
+      <div class="module-grid" id="module-grid"></div>
     </div>
 
     <!-- MARKETPLACE -->
@@ -624,7 +743,7 @@
         <div class="version-card">1.8.9 PvP</div>
         <div class="version-card">1.16.5 Forge</div>
       </div>
-      <button class="btn btn-primary">Launch</button>
+      <button class="btn-launch" id="launch-btn-2">Launch Game</button>
     </div>
 
     <!-- SETTINGS -->
@@ -660,7 +779,7 @@
         </div>
       </div>
       <div class="card">
-        <div class="card-label" style="margin:0;" id="account-username">Username: MicrosoftUser</div>
+        <div class="card-label" style="margin:0;" id="account-username">Username: Guest</div>
       </div>
       <button class="btn btn-ghost" id="logout-btn">Logout</button>
     </div>
@@ -676,67 +795,80 @@
 </div>
 
 <script>
-  // ---------- Login gate ----------
+  // ---------- Window controls (Electron) ----------
+  const isElectron = typeof window.launcher !== 'undefined';
+
+  document.getElementById('btn-minimize').addEventListener('click', () => {
+    if (isElectron) window.launcher.minimize();
+  });
+  document.getElementById('btn-maximize').addEventListener('click', () => {
+    if (isElectron) window.launcher.maximize();
+  });
+  document.getElementById('btn-close').addEventListener('click', () => {
+    if (isElectron) window.launcher.close();
+    else window.close();
+  });
+
+  // ---------- Login ----------
   const STORAGE_KEY = 'nebulax_launcher_state';
   const loginScreen = document.getElementById('login-screen');
-  const appRoot = document.getElementById('app-root');
   const usernameField = document.getElementById('username-field');
   const loginError = document.getElementById('login-error');
   const topbarUsername = document.getElementById('topbar-username');
   const accountUsername = document.getElementById('account-username');
   const accountModeBadge = document.getElementById('account-mode-badge');
+  const homePlayerName = document.getElementById('home-player-name');
 
+  let currentUsername = '';
   const logLines = [];
 
   function nowTs() {
-    const d = new Date();
-    return d.toTimeString().slice(0, 8);
+    return new Date().toTimeString().slice(0, 8);
   }
 
-  function addLog(msg) {
-    logLines.push([nowTs(), msg]);
+  function addLog(msg, isError) {
+    logLines.push([nowTs(), msg, isError || false]);
     renderLogs();
   }
 
   function renderLogs() {
     const logPanel = document.getElementById('log-panel');
     if (!logPanel) return;
-    logPanel.innerHTML = logLines.slice().reverse().map(([ts, msg]) =>
-      `<div class="log-line${msg.includes('Launch') || msg.includes('login') ? ' highlight' : ''}"><span class="ts">${ts}</span>${msg}</div>`
+    logPanel.innerHTML = logLines.slice(-200).reverse().map(([ts, msg, err]) =>
+      `<div class="log-line${err ? ' error' : msg.includes('Launch') || msg.includes('login') ? ' highlight' : ''}"><span class="ts">${ts}</span>${msg}</div>`
     ).join('');
   }
 
   function completeLogin(username, mode) {
+    currentUsername = username;
     loginScreen.classList.add('hidden');
     topbarUsername.textContent = 'Logged in as ' + username;
     accountUsername.textContent = 'Username: ' + username;
     accountModeBadge.textContent = mode;
+    homePlayerName.textContent = username;
     addLog(mode + ' login as ' + username);
     saveState();
   }
 
   document.getElementById('ms-login-btn').addEventListener('click', () => {
-    loginError.textContent = "Microsoft login isn't connected yet — try Guest or Username below for now.";
+    loginError.textContent = "Microsoft login coming soon — use Username or Guest for now.";
   });
 
   document.getElementById('username-login-btn').addEventListener('click', () => {
     const name = usernameField.value.trim();
-    if (!name) {
-      loginError.textContent = 'Enter a username first.';
-      return;
-    }
-    if (name.length < 3) {
-      loginError.textContent = 'Username must be at least 3 characters.';
-      return;
-    }
+    if (!name) { loginError.textContent = 'Enter a username first.'; return; }
+    if (name.length < 3) { loginError.textContent = 'Username must be at least 3 characters.'; return; }
     loginError.textContent = '';
     completeLogin(name, 'Offline');
   });
 
+  usernameField.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('username-login-btn').click();
+  });
+
   document.getElementById('guest-login-btn').addEventListener('click', () => {
-    const guestName = 'Guest' + Math.floor(1000 + Math.random() * 9000);
     loginError.textContent = '';
-    completeLogin(guestName, 'Guest');
+    completeLogin('Guest' + Math.floor(1000 + Math.random() * 9000), 'Guest');
   });
 
   document.getElementById('logout-btn').addEventListener('click', () => {
@@ -760,39 +892,143 @@
   navItems.forEach(item => {
     item.addEventListener('click', () => goTo(item.dataset.page));
   });
-
   document.querySelectorAll('[data-goto]').forEach(el => {
     el.addEventListener('click', () => goTo(el.dataset.goto));
   });
 
-  // Version selection
+  // ---------- Version selection ----------
   document.querySelectorAll('.version-card').forEach(card => {
     card.addEventListener('click', () => {
       document.querySelectorAll('.version-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
-      addLog('Selected ' + card.textContent.trim());
+      addLog('Selected version ' + card.textContent.trim());
+      saveState();
     });
   });
 
-  // Launch buttons (Home + Versions) — simulated launch sequence
-  document.querySelectorAll('.btn-primary').forEach(btn => {
-    if (btn.textContent.trim().includes('Launch')) {
-      btn.addEventListener('click', () => {
-        const original = btn.textContent;
-        btn.textContent = 'Launching…';
-        btn.disabled = true;
-        addLog('Launching Minecraft');
-        setTimeout(() => {
-          addLog('Launch complete');
-          btn.textContent = original;
-          btn.disabled = false;
-        }, 1400);
-      });
-    }
-  });
+  // ---------- Launch Game ----------
+  let gameRunning = false;
 
-  // Seed a few historical-looking log lines so the page doesn't start empty
-  ['Selected 1.21.1', 'Selected 1.19.4', 'Selected 1.16.5 Forge'].forEach(addLog);
+  function setStatus(indicator, text) {
+    const bar = document.getElementById('status-bar');
+    const dot = bar.querySelector('.status-indicator');
+    dot.className = 'status-indicator ' + indicator;
+    document.getElementById('status-text').textContent = text;
+    document.getElementById('game-status').textContent = text;
+  }
+
+  async function launchGame() {
+    if (gameRunning) return;
+
+    const launchBtn = document.getElementById('launch-btn');
+    const launchBtn2 = document.getElementById('launch-btn-2');
+    gameRunning = true;
+    launchBtn.textContent = 'Launching...';
+    launchBtn.classList.add('launching');
+    launchBtn.disabled = true;
+    if (launchBtn2) { launchBtn2.textContent = 'Launching...'; launchBtn2.disabled = true; }
+    setStatus('launching', 'Launching Minecraft...');
+    addLog('Launching Minecraft 1.21.1 as ' + currentUsername);
+
+    if (isElectron) {
+      const result = await window.launcher.launchGame(currentUsername);
+      if (result.success) {
+        setStatus('running', 'Game is running');
+        launchBtn.textContent = 'Game Running';
+        if (launchBtn2) launchBtn2.textContent = 'Game Running';
+        addLog('Minecraft process started');
+      } else {
+        setStatus('error', 'Launch failed');
+        addLog('Launch error: ' + result.error, true);
+        resetLaunchButton();
+      }
+    } else {
+      // Browser fallback - simulate
+      addLog('Running in browser mode (simulated launch)');
+      setTimeout(() => {
+        setStatus('running', 'Game running (simulated)');
+        launchBtn.textContent = 'Game Running';
+        if (launchBtn2) launchBtn2.textContent = 'Game Running';
+        addLog('Simulated launch complete');
+        setTimeout(() => resetLaunchButton(), 5000);
+      }, 2000);
+    }
+  }
+
+  function resetLaunchButton() {
+    gameRunning = false;
+    const launchBtn = document.getElementById('launch-btn');
+    const launchBtn2 = document.getElementById('launch-btn-2');
+    launchBtn.textContent = 'Launch Game';
+    launchBtn.classList.remove('launching');
+    launchBtn.disabled = false;
+    if (launchBtn2) { launchBtn2.textContent = 'Launch Game'; launchBtn2.disabled = false; }
+    setStatus('ready', 'Ready to launch');
+  }
+
+  document.getElementById('launch-btn').addEventListener('click', launchGame);
+  document.getElementById('launch-btn-2').addEventListener('click', launchGame);
+
+  // Electron events
+  if (isElectron) {
+    window.launcher.onLog((msg) => {
+      addLog(msg);
+    });
+    window.launcher.onError((msg) => {
+      addLog('Error: ' + msg, true);
+      setStatus('error', 'Error occurred');
+    });
+    window.launcher.onGameClosed((code) => {
+      addLog('Game closed (exit code: ' + code + ')');
+      resetLaunchButton();
+    });
+  }
+
+  // ---------- Client Modules ----------
+  const clientModules = [
+    { name: 'FPS Display', desc: 'Show FPS counter', on: true },
+    { name: 'CPS Counter', desc: 'Clicks per second', on: true },
+    { name: 'Ping Display', desc: 'Network latency', on: true },
+    { name: 'Keystrokes', desc: 'WASD + mouse keys', on: true },
+    { name: 'Coordinates', desc: 'XYZ position', on: true },
+    { name: 'Armor HUD', desc: 'Durability display', on: true },
+    { name: 'Saturation', desc: 'Hunger saturation', on: true },
+    { name: 'Food Preview', desc: 'Hunger restore preview', on: true },
+    { name: 'Shield Status', desc: 'Shield blocking state', on: true },
+    { name: 'Timer', desc: 'Session timer', on: true },
+    { name: 'Fullbright', desc: 'See in the dark', on: false },
+    { name: 'Zoom', desc: 'Spyglass zoom (C)', on: false },
+    { name: 'Crosshair', desc: 'Custom crosshair', on: false },
+    { name: 'NoFog', desc: 'Remove fog effect', on: false },
+    { name: 'Hitbox', desc: 'Entity hitboxes', on: false },
+    { name: 'FPS Boost', desc: 'Kill particles/clouds', on: false },
+    { name: 'Sprint', desc: 'Auto sprint', on: true },
+    { name: 'ToggleSneak', desc: 'Hold sneak toggle', on: false },
+    { name: 'NoSlowdown', desc: 'Sprint while using items', on: false },
+    { name: 'AutoTool', desc: 'Best tool auto-switch', on: false },
+    { name: 'FastPlace', desc: 'No placement delay', on: false },
+    { name: 'NoFall', desc: 'No fall damage', on: false },
+  ];
+
+  function renderModules() {
+    const grid = document.getElementById('module-grid');
+    grid.innerHTML = clientModules.map((m, i) => `
+      <div class="module-card${m.on ? ' on' : ''}" data-idx="${i}">
+        ${m.name}
+        <div class="module-desc">${m.desc}</div>
+        <div class="toggle-led"></div>
+      </div>
+    `).join('');
+    grid.querySelectorAll('.module-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const idx = parseInt(card.dataset.idx);
+        clientModules[idx].on = !clientModules[idx].on;
+        addLog((clientModules[idx].on ? 'Enabled ' : 'Disabled ') + clientModules[idx].name);
+        renderModules();
+      });
+    });
+  }
+  renderModules();
 
   // ---------- Marketplace ----------
   const addons = [
@@ -808,10 +1044,8 @@
     const grid = document.getElementById('marketplace-grid');
     if (!grid) return;
     const f = filter.trim().toLowerCase();
-    const filtered = addons.filter(a =>
-      a.name.toLowerCase().includes(f) || a.desc.toLowerCase().includes(f)
-    );
-    grid.innerHTML = filtered.map((a, i) => `
+    const filtered = addons.filter(a => a.name.toLowerCase().includes(f) || a.desc.toLowerCase().includes(f));
+    grid.innerHTML = filtered.map(a => `
       <div class="addon-card">
         <div class="addon-icon">${a.icon}</div>
         <div class="addon-name">${a.name}</div>
@@ -840,15 +1074,13 @@
   document.getElementById('marketplace-search').addEventListener('input', e => {
     renderMarketplace(e.target.value);
   });
-
   renderMarketplace();
 
   // ---------- Persistence ----------
-
   function saveState() {
     const state = {
       loggedIn: !loginScreen.classList.contains('hidden') ? false : true,
-      username: topbarUsername.textContent.replace('Logged in as ', ''),
+      username: currentUsername,
       mode: accountModeBadge.textContent,
       version: document.querySelector('.version-card.selected')?.textContent.trim() || '1.21.1',
       ram: document.querySelectorAll('#page-settings select')[0]?.value,
@@ -877,12 +1109,9 @@
         addons.forEach((a, i) => { if (state.addonsInstalled[i] !== undefined) a.installed = state.addonsInstalled[i]; });
         renderMarketplace();
       }
-    } catch (e) {
-      console.warn('Could not load saved state', e);
-    }
+    } catch (e) { }
   }
 
-  // Save on any meaningful interaction
   document.querySelectorAll('.version-card').forEach(el => {
     el.addEventListener('click', () => setTimeout(saveState, 0));
   });
@@ -890,7 +1119,7 @@
     sel.addEventListener('change', saveState);
   });
 
-
+  addLog('NebulaX Launcher initialized');
   loadState();
 </script>
 
