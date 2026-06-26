@@ -61,7 +61,7 @@ public class LoginScreen extends Screen {
         drawStar(ctx, width * 0.9, height * 0.35);
 
         // Card background
-        ctx.fill(cardX, cardY, cardX + cardW, cardY + cardH, 0xE014112450);
+        ctx.fill(cardX, cardY, cardX + cardW, cardY + cardH, 0xE0141124);
         // Card border
         drawBorder(ctx, cardX, cardY, cardW, cardH, 0xFF2A2440);
         // Card glow shadow
