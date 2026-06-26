@@ -14,6 +14,7 @@ public class ClickGui extends Screen {
 
     private final List<CategoryPanel> panels = new ArrayList<>();
     private int hudButtonX, hudButtonY, hudButtonW, hudButtonH;
+    private int nameButtonX, nameButtonY, nameButtonW, nameButtonH;
 
     public ClickGui() {
         super(Text.literal("Vasic Client"));
@@ -43,10 +44,10 @@ public class ClickGui extends Screen {
                 width / 2 + textRenderer.getWidth(title) / 2 + 4, 10, 0xFF666666);
 
         // Edit HUD button
-        String hudText = "[ Edit HUD Layout ]";
+        String hudText = "[ Edit HUD ]";
         hudButtonW = textRenderer.getWidth(hudText) + 8;
         hudButtonH = 14;
-        hudButtonX = width / 2 - hudButtonW / 2;
+        hudButtonX = width / 2 - hudButtonW - 4;
         hudButtonY = 24;
         boolean hudHovered = mouseX >= hudButtonX && mouseX <= hudButtonX + hudButtonW
                 && mouseY >= hudButtonY && mouseY <= hudButtonY + hudButtonH;
@@ -55,6 +56,21 @@ public class ClickGui extends Screen {
         context.drawTextWithShadow(textRenderer, hudText, hudButtonX + 4, hudButtonY + 3,
                 hudHovered ? 0xFF26C6DA : 0xFF999999);
 
+        // Username button
+        String currentName = VasicClient.getCustomUsername();
+        String nameText = currentName != null && !currentName.isEmpty()
+                ? "[ " + currentName + " ]" : "[ Set Username ]";
+        nameButtonW = textRenderer.getWidth(nameText) + 8;
+        nameButtonH = 14;
+        nameButtonX = width / 2 + 4;
+        nameButtonY = 24;
+        boolean nameHovered = mouseX >= nameButtonX && mouseX <= nameButtonX + nameButtonW
+                && mouseY >= nameButtonY && mouseY <= nameButtonY + nameButtonH;
+        context.fill(nameButtonX, nameButtonY, nameButtonX + nameButtonW, nameButtonY + nameButtonH,
+                nameHovered ? 0x60FFFFFF : 0x30FFFFFF);
+        context.drawTextWithShadow(textRenderer, nameText, nameButtonX + 4, nameButtonY + 3,
+                nameHovered ? 0xFF26C6DA : 0xFF999999);
+
         for (CategoryPanel panel : panels) {
             panel.render(context, mouseX, mouseY, textRenderer);
         }
@@ -62,10 +78,15 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // Check Edit HUD button
         if (button == 0 && mouseX >= hudButtonX && mouseX <= hudButtonX + hudButtonW
                 && mouseY >= hudButtonY && mouseY <= hudButtonY + hudButtonH) {
             client.setScreen(new HudEditorScreen());
+            return true;
+        }
+
+        if (button == 0 && mouseX >= nameButtonX && mouseX <= nameButtonX + nameButtonW
+                && mouseY >= nameButtonY && mouseY <= nameButtonY + nameButtonH) {
+            client.setScreen(new UsernameScreen(this));
             return true;
         }
 

@@ -19,6 +19,7 @@ public class VasicClient implements ClientModInitializer {
     public static final String VERSION = "1.0.0";
 
     private static VasicClient instance;
+    private static String customUsername = "";
     private ModuleManager moduleManager;
     private ConfigManager configManager;
     private HudRenderer hudRenderer;
@@ -67,5 +68,13 @@ public class VasicClient implements ClientModInitializer {
 
     public HudRenderer getHudRenderer() {
         return hudRenderer;
+    }
+
+    public static String getCustomUsername() {
+        return customUsername;
+    }
+
+    public static void setCustomUsername(String name) {
+        customUsername = name;
     }
 }

@@ -57,6 +57,12 @@ public class ConfigManager {
         crosshair.addProperty("blue", CustomCrosshair.getBlue());
         root.add("crosshair", crosshair);
 
+        // Save username
+        String customName = VasicClient.getCustomUsername();
+        if (customName != null && !customName.isEmpty()) {
+            root.addProperty("username", customName);
+        }
+
         try {
             Files.writeString(configFile, GSON.toJson(root));
         } catch (IOException e) {
@@ -97,6 +103,11 @@ public class ConfigManager {
                     }
                 }
             }
+            // Load username
+            if (root.has("username")) {
+                VasicClient.setCustomUsername(root.get("username").getAsString());
+            }
+
             // Load crosshair settings
             if (root.has("crosshair")) {
                 JsonObject ch = root.getAsJsonObject("crosshair");
