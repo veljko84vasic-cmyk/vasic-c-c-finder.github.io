@@ -2,6 +2,7 @@ package com.vasic.client;
 
 import com.vasic.client.config.ConfigManager;
 import com.vasic.client.gui.ClickGui;
+import com.vasic.client.gui.LoginScreen;
 import com.vasic.client.hud.HudRenderer;
 import com.vasic.client.module.ModuleManager;
 import net.fabricmc.api.ClientModInitializer;
@@ -20,6 +21,8 @@ public class VasicClient implements ClientModInitializer {
 
     private static VasicClient instance;
     private static String customUsername = "";
+    private static boolean loggedIn = false;
+    private boolean shownLoginScreen = false;
     private ModuleManager moduleManager;
     private ConfigManager configManager;
     private HudRenderer hudRenderer;
@@ -48,6 +51,11 @@ public class VasicClient implements ClientModInitializer {
     }
 
     private void onTick(MinecraftClient client) {
+        if (!shownLoginScreen && !loggedIn && client.currentScreen instanceof net.minecraft.client.gui.screen.TitleScreen) {
+            shownLoginScreen = true;
+            client.setScreen(new LoginScreen());
+            return;
+        }
         if (openGuiKey.wasPressed()) {
             client.setScreen(new ClickGui());
         }
@@ -76,5 +84,13 @@ public class VasicClient implements ClientModInitializer {
 
     public static void setCustomUsername(String name) {
         customUsername = name;
+    }
+
+    public static boolean isLoggedIn() {
+        return loggedIn;
+    }
+
+    public static void setLoggedIn(boolean value) {
+        loggedIn = value;
     }
 }
