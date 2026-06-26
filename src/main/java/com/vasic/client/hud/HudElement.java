@@ -7,6 +7,7 @@ public class HudElement {
     private final String moduleName;
     private int x, y;
     private int width, height;
+    private float scale = 1.0f;
     private boolean dragging;
     private int dragOffsetX, dragOffsetY;
 
@@ -21,11 +22,11 @@ public class HudElement {
     }
 
     public boolean contains(double mouseX, double mouseY) {
-        return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+        return mouseX >= x && mouseX <= x + getScaledWidth() && mouseY >= y && mouseY <= y + getScaledHeight();
     }
 
     public boolean isCloseButtonHit(double mouseX, double mouseY) {
-        int bx = x + width - 10;
+        int bx = x + getScaledWidth() - 10;
         int by = y - 2;
         return mouseX >= bx && mouseX <= bx + 10 && mouseY >= by && mouseY <= by + 10;
     }
@@ -55,6 +56,11 @@ public class HudElement {
     public int getWidth() { return width; }
     public int getHeight() { return height; }
     public boolean isDragging() { return dragging; }
+
+    public float getScale() { return scale; }
+    public void setScale(float s) { scale = Math.max(0.5f, Math.min(3.0f, s)); }
+    public int getScaledWidth() { return (int) (width * scale); }
+    public int getScaledHeight() { return (int) (height * scale); }
 
     public void setPosition(int x, int y) {
         this.x = x;

@@ -25,19 +25,30 @@ public class HudEditorScreen extends Screen {
             int borderColor = el.isDragging() ? 0xFF26C6DA : enabled ? 0xAAFFFFFF : 0x55FF4444;
             int bgColor = el.isDragging() ? 0x4026C6DA : enabled ? 0x20FFFFFF : 0x15FF4444;
 
-            context.fill(el.getX(), el.getY(), el.getX() + el.getWidth(), el.getY() + el.getHeight(), bgColor);
+            int sw = el.getScaledWidth();
+            int sh = el.getScaledHeight();
 
-            context.fill(el.getX(), el.getY(), el.getX() + el.getWidth(), el.getY() + 1, borderColor);
-            context.fill(el.getX(), el.getY() + el.getHeight() - 1, el.getX() + el.getWidth(), el.getY() + el.getHeight(), borderColor);
-            context.fill(el.getX(), el.getY(), el.getX() + 1, el.getY() + el.getHeight(), borderColor);
-            context.fill(el.getX() + el.getWidth() - 1, el.getY(), el.getX() + el.getWidth(), el.getY() + el.getHeight(), borderColor);
+            context.fill(el.getX(), el.getY(), el.getX() + sw, el.getY() + sh, bgColor);
+
+            context.fill(el.getX(), el.getY(), el.getX() + sw, el.getY() + 1, borderColor);
+            context.fill(el.getX(), el.getY() + sh - 1, el.getX() + sw, el.getY() + sh, borderColor);
+            context.fill(el.getX(), el.getY(), el.getX() + 1, el.getY() + sh, borderColor);
+            context.fill(el.getX() + sw - 1, el.getY(), el.getX() + sw, el.getY() + sh, borderColor);
 
             int labelColor = enabled ? 0xFFFFFFFF : 0x66FFFFFF;
             context.drawTextWithShadow(textRenderer, el.getDisplayName(),
-                    el.getX() + 2, el.getY() + (el.getHeight() - 8) / 2, labelColor);
+                    el.getX() + 2, el.getY() + (sh - 8) / 2, labelColor);
+
+            // Scale label
+            int pct = Math.round(el.getScale() * 100);
+            if (pct != 100) {
+                String scaleText = pct + "%";
+                context.drawTextWithShadow(textRenderer, scaleText,
+                        el.getX(), el.getY() + sh + 2, 0xFF26C6DA);
+            }
 
             if (!el.getModuleName().isEmpty()) {
-                int bx = el.getX() + el.getWidth() - 10;
+                int bx = el.getX() + sw - 10;
                 int by = el.getY() - 2;
                 boolean hovered = mouseX >= bx && mouseX <= bx + 10 && mouseY >= by && mouseY <= by + 10;
 
@@ -50,7 +61,7 @@ public class HudEditorScreen extends Screen {
             }
         }
 
-        String hint = "Drag to move | Click X to toggle | ESC to save";
+        String hint = "Drag to move | Scroll to scale | X to toggle | ESC to save";
         int hintW = textRenderer.getWidth(hint);
         context.fill(width / 2 - hintW / 2 - 6, height - 22, width / 2 + hintW / 2 + 6, height - 6, 0xCC000000);
         context.drawTextWithShadow(textRenderer, hint, width / 2 - hintW / 2, height - 18, 0xFF26C6DA);
@@ -96,6 +107,17 @@ public class HudEditorScreen extends Screen {
             el.stopDrag();
         }
         return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        for (HudElement el : VasicClient.getInstance().getHudRenderer().getElements()) {
+            if (el.contains(mouseX, mouseY)) {
+                el.setScale(el.getScale() + (float) (verticalAmount * 0.1));
+                return true;
+            }
+        }
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     @Override

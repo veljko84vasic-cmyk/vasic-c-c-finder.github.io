@@ -48,11 +48,14 @@ public class HudRenderer {
         elements.put("modules", new HudElement("modules", "Modules", "", sw - 90, 4, 88, 120));
         elements.put("crosshair", new HudElement("crosshair", "Crosshair", "Crosshair", sw / 2 - 7, sh / 2 - 7, 15, 15));
 
-        Map<String, int[]> saved = VasicClient.getInstance().getConfigManager().getSavedHudPositions();
-        for (Map.Entry<String, int[]> entry : saved.entrySet()) {
+        Map<String, float[]> saved = VasicClient.getInstance().getConfigManager().getSavedHudPositions();
+        for (Map.Entry<String, float[]> entry : saved.entrySet()) {
             HudElement el = elements.get(entry.getKey());
             if (el != null) {
-                el.setPosition(entry.getValue()[0], entry.getValue()[1]);
+                el.setPosition((int) entry.getValue()[0], (int) entry.getValue()[1]);
+                if (entry.getValue().length > 2) {
+                    el.setScale(entry.getValue()[2]);
+                }
             }
         }
     }
@@ -77,19 +80,34 @@ public class HudRenderer {
         if (mc.currentScreen instanceof HudEditorScreen) return;
         if (mc.currentScreen != null) return;
 
-        if (FPSDisplay.isActive()) renderFPS(context, tr);
-        if (CPSCounter.isActive()) renderCPS(context, tr);
-        if (PingDisplay.isActive()) renderPing(context, tr);
-        if (SaturationDisplay.isActive()) renderSaturation(context, tr);
-        if (CoordinatesDisplay.isActive()) renderCoords(context, tr);
-        if (com.vasic.client.module.modules.misc.Timer.isActive()) renderTimer(context, tr);
-        if (ArmorHud.isActive()) renderArmor(context, tr);
-        if (FoodPreview.isActive()) renderFood(context, tr);
-        if (ShieldStatus.isActive()) renderShield(context, tr);
-        if (KeystrokesModule.isActive()) renderKeystrokes(context, tr);
-        if (CustomCrosshair.isActive()) renderCrosshair(context);
+        if (FPSDisplay.isActive()) scaled(context, "fps", () -> renderFPS(context, tr));
+        if (CPSCounter.isActive()) scaled(context, "cps", () -> renderCPS(context, tr));
+        if (PingDisplay.isActive()) scaled(context, "ping", () -> renderPing(context, tr));
+        if (SaturationDisplay.isActive()) scaled(context, "saturation", () -> renderSaturation(context, tr));
+        if (CoordinatesDisplay.isActive()) scaled(context, "coords", () -> renderCoords(context, tr));
+        if (com.vasic.client.module.modules.misc.Timer.isActive()) scaled(context, "timer", () -> renderTimer(context, tr));
+        if (ArmorHud.isActive()) scaled(context, "armor", () -> renderArmor(context, tr));
+        if (FoodPreview.isActive()) scaled(context, "food", () -> renderFood(context, tr));
+        if (ShieldStatus.isActive()) scaled(context, "shield", () -> renderShield(context, tr));
+        if (KeystrokesModule.isActive()) scaled(context, "keystrokes", () -> renderKeystrokes(context, tr));
+        if (CustomCrosshair.isActive()) scaled(context, "crosshair", () -> renderCrosshair(context));
 
-        renderActiveModules(context, tr);
+        scaled(context, "modules", () -> renderActiveModules(context, tr));
+    }
+
+    private void scaled(DrawContext ctx, String elementId, Runnable draw) {
+        HudElement el = elements.get(elementId);
+        float s = el.getScale();
+        if (s != 1.0f) {
+            ctx.getMatrices().push();
+            ctx.getMatrices().translate(el.getX(), el.getY(), 0);
+            ctx.getMatrices().scale(s, s, 1);
+            ctx.getMatrices().translate(-el.getX(), -el.getY(), 0);
+            draw.run();
+            ctx.getMatrices().pop();
+        } else {
+            draw.run();
+        }
     }
 
     private void renderFPS(DrawContext ctx, TextRenderer tr) {

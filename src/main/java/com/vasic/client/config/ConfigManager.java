@@ -21,13 +21,13 @@ public class ConfigManager {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private final Path configFile;
-    private final Map<String, int[]> savedHudPositions = new HashMap<>();
+    private final Map<String, float[]> savedHudPositions = new HashMap<>();
 
     public ConfigManager() {
         configFile = FabricLoader.getInstance().getConfigDir().resolve("vasic-client.json");
     }
 
-    public Map<String, int[]> getSavedHudPositions() {
+    public Map<String, float[]> getSavedHudPositions() {
         return savedHudPositions;
     }
 
@@ -44,12 +44,13 @@ public class ConfigManager {
         }
         root.add("modules", modules);
 
-        // Save HUD positions
+        // Save HUD positions + scale
         JsonObject hud = new JsonObject();
         for (HudElement el : VasicClient.getInstance().getHudRenderer().getElements()) {
             JsonObject obj = new JsonObject();
             obj.addProperty("x", el.getX());
             obj.addProperty("y", el.getY());
+            obj.addProperty("scale", el.getScale());
             hud.add(el.getId(), obj);
         }
         root.add("hud", hud);
@@ -105,12 +106,15 @@ public class ConfigManager {
                 }
             }
 
-            // Store HUD positions to apply later when elements are created
+            // Store HUD positions + scale to apply later
             if (root.has("hud")) {
                 JsonObject hud = root.getAsJsonObject("hud");
                 for (String key : hud.keySet()) {
                     JsonObject obj = hud.getAsJsonObject(key);
-                    savedHudPositions.put(key, new int[]{obj.get("x").getAsInt(), obj.get("y").getAsInt()});
+                    float x = obj.get("x").getAsFloat();
+                    float y = obj.get("y").getAsFloat();
+                    float scale = obj.has("scale") ? obj.get("scale").getAsFloat() : 1.0f;
+                    savedHudPositions.put(key, new float[]{x, y, scale});
                 }
             }
 
