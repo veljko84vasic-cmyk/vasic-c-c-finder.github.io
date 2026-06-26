@@ -1,6 +1,7 @@
 package com.vasic.client.hud;
 
 import com.vasic.client.VasicClient;
+import com.vasic.client.module.Module;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -20,25 +21,36 @@ public class HudEditorScreen extends Screen {
         Collection<HudElement> elements = VasicClient.getInstance().getHudRenderer().getElements();
 
         for (HudElement el : elements) {
-            int borderColor = el.isDragging() ? 0xFF26C6DA : 0xAAFFFFFF;
-            int bgColor = el.isDragging() ? 0x4026C6DA : 0x20FFFFFF;
+            boolean enabled = isElementEnabled(el);
+            int borderColor = el.isDragging() ? 0xFF26C6DA : enabled ? 0xAAFFFFFF : 0x55FF4444;
+            int bgColor = el.isDragging() ? 0x4026C6DA : enabled ? 0x20FFFFFF : 0x15FF4444;
 
-            // Background
             context.fill(el.getX(), el.getY(), el.getX() + el.getWidth(), el.getY() + el.getHeight(), bgColor);
 
-            // Border
             context.fill(el.getX(), el.getY(), el.getX() + el.getWidth(), el.getY() + 1, borderColor);
             context.fill(el.getX(), el.getY() + el.getHeight() - 1, el.getX() + el.getWidth(), el.getY() + el.getHeight(), borderColor);
             context.fill(el.getX(), el.getY(), el.getX() + 1, el.getY() + el.getHeight(), borderColor);
             context.fill(el.getX() + el.getWidth() - 1, el.getY(), el.getX() + el.getWidth(), el.getY() + el.getHeight(), borderColor);
 
-            // Label
+            int labelColor = enabled ? 0xFFFFFFFF : 0x66FFFFFF;
             context.drawTextWithShadow(textRenderer, el.getDisplayName(),
-                    el.getX() + 2, el.getY() + (el.getHeight() - 8) / 2, 0xFFFFFFFF);
+                    el.getX() + 2, el.getY() + (el.getHeight() - 8) / 2, labelColor);
+
+            if (!el.getModuleName().isEmpty()) {
+                int bx = el.getX() + el.getWidth() - 10;
+                int by = el.getY() - 2;
+                boolean hovered = mouseX >= bx && mouseX <= bx + 10 && mouseY >= by && mouseY <= by + 10;
+
+                int xBg = enabled ? (hovered ? 0xDDFF2222 : 0xAAFF4444) : (hovered ? 0xDD22CC22 : 0xAA44AA44);
+                context.fill(bx, by, bx + 10, by + 10, xBg);
+
+                String symbol = enabled ? "x" : "+";
+                int symColor = hovered ? 0xFFFFFFFF : 0xFFDDDDDD;
+                context.drawTextWithShadow(textRenderer, symbol, bx + 2, by + 1, symColor);
+            }
         }
 
-        // Instructions
-        String hint = "Drag elements to move them. Press ESC to save.";
+        String hint = "Drag to move | Click X to toggle | ESC to save";
         int hintW = textRenderer.getWidth(hint);
         context.fill(width / 2 - hintW / 2 - 6, height - 22, width / 2 + hintW / 2 + 6, height - 6, 0xCC000000);
         context.drawTextWithShadow(textRenderer, hint, width / 2 - hintW / 2, height - 18, 0xFF26C6DA);
@@ -47,6 +59,16 @@ public class HudEditorScreen extends Screen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
+
+        for (HudElement el : VasicClient.getInstance().getHudRenderer().getElements()) {
+            if (!el.getModuleName().isEmpty() && el.isCloseButtonHit(mouseX, mouseY)) {
+                Module mod = VasicClient.getInstance().getModuleManager().getModule(el.getModuleName());
+                if (mod != null) {
+                    mod.toggle();
+                }
+                return true;
+            }
+        }
 
         for (HudElement el : VasicClient.getInstance().getHudRenderer().getElements()) {
             if (el.contains(mouseX, mouseY)) {
@@ -85,5 +107,11 @@ public class HudEditorScreen extends Screen {
     @Override
     public boolean shouldPause() {
         return false;
+    }
+
+    private boolean isElementEnabled(HudElement el) {
+        if (el.getModuleName().isEmpty()) return true;
+        Module mod = VasicClient.getInstance().getModuleManager().getModule(el.getModuleName());
+        return mod != null && mod.isEnabled();
     }
 }

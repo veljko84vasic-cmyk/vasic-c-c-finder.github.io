@@ -34,18 +34,18 @@ public class HudRenderer {
         if (initialized) return;
         initialized = true;
 
-        elements.put("fps", new HudElement("fps", "FPS", 4, 4, 70, 12));
-        elements.put("cps", new HudElement("cps", "CPS", 4, 18, 100, 12));
-        elements.put("ping", new HudElement("ping", "Ping", 4, 32, 55, 12));
-        elements.put("saturation", new HudElement("saturation", "Saturation", 4, 46, 75, 12));
-        elements.put("coords", new HudElement("coords", "Coords", 4, sh - 28, 200, 24));
-        elements.put("timer", new HudElement("timer", "Timer", sw / 2 - 30, 4, 60, 12));
-        elements.put("armor", new HudElement("armor", "Armor", sw - 40, sh / 2 - 44, 38, 80));
-        elements.put("food", new HudElement("food", "Food Preview", sw / 2 - 50, sh - 58, 100, 14));
-        elements.put("shield", new HudElement("shield", "Shield", sw / 2 + 98, sh - 44, 55, 14));
-        elements.put("keystrokes", new HudElement("keystrokes", "Keystrokes", 8, sh / 2 - 48, 70, 96));
-        elements.put("modules", new HudElement("modules", "Modules", sw - 90, 4, 88, 120));
-        elements.put("crosshair", new HudElement("crosshair", "Crosshair", sw / 2 - 8, sh / 2 - 8, 16, 16));
+        elements.put("fps", new HudElement("fps", "FPS", "FPS", 4, 4, 70, 12));
+        elements.put("cps", new HudElement("cps", "CPS", "CPS", 4, 18, 100, 12));
+        elements.put("ping", new HudElement("ping", "Ping", "Ping", 4, 32, 55, 12));
+        elements.put("saturation", new HudElement("saturation", "Saturation", "Saturation", 4, 46, 75, 12));
+        elements.put("coords", new HudElement("coords", "Coords", "Coords", 4, sh - 28, 200, 24));
+        elements.put("timer", new HudElement("timer", "Timer", "Timer", sw / 2 - 30, 4, 60, 12));
+        elements.put("armor", new HudElement("armor", "Armor", "ArmorHUD", sw - 40, sh / 2 - 44, 38, 80));
+        elements.put("food", new HudElement("food", "Food Preview", "FoodPreview", sw / 2 - 50, sh - 58, 100, 14));
+        elements.put("shield", new HudElement("shield", "Shield", "ShieldStatus", sw / 2 + 98, sh - 44, 55, 14));
+        elements.put("keystrokes", new HudElement("keystrokes", "Keystrokes", "Keystrokes", 8, sh / 2 - 48, 70, 96));
+        elements.put("modules", new HudElement("modules", "Modules", "", sw - 90, 4, 88, 120));
+        elements.put("crosshair", new HudElement("crosshair", "Crosshair", "Crosshair", sw / 2 - 8, sh / 2 - 8, 16, 16));
     }
 
     public Collection<HudElement> getElements() {
