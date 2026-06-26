@@ -7,146 +7,130 @@ import com.vasic.client.module.modules.render.CustomCrosshair;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.item.ItemStack;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FoodComponent;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 
-import java.util.List;
+import java.util.*;
 
 public class HudRenderer {
 
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private final long sessionStartTime = System.currentTimeMillis();
+    private final LinkedHashMap<String, HudElement> elements = new LinkedHashMap<>();
+    private boolean initialized = false;
+
+    public void initDefaults(int sw, int sh) {
+        if (initialized) return;
+        initialized = true;
+
+        elements.put("fps", new HudElement("fps", "FPS", 4, 4, 70, 12));
+        elements.put("cps", new HudElement("cps", "CPS", 4, 18, 100, 12));
+        elements.put("ping", new HudElement("ping", "Ping", 4, 32, 55, 12));
+        elements.put("saturation", new HudElement("saturation", "Saturation", 4, 46, 75, 12));
+        elements.put("coords", new HudElement("coords", "Coords", 4, sh - 28, 200, 24));
+        elements.put("timer", new HudElement("timer", "Timer", sw / 2 - 30, 4, 60, 12));
+        elements.put("armor", new HudElement("armor", "Armor", sw - 40, sh / 2 - 44, 38, 80));
+        elements.put("food", new HudElement("food", "Food Preview", sw / 2 - 50, sh - 58, 100, 14));
+        elements.put("shield", new HudElement("shield", "Shield", sw / 2 + 98, sh - 44, 55, 14));
+        elements.put("keystrokes", new HudElement("keystrokes", "Keystrokes", 8, sh / 2 - 48, 70, 96));
+        elements.put("modules", new HudElement("modules", "Modules", sw - 90, 4, 88, 120));
+        elements.put("crosshair", new HudElement("crosshair", "Crosshair", sw / 2 - 8, sh / 2 - 8, 16, 16));
+    }
+
+    public Collection<HudElement> getElements() {
+        return elements.values();
+    }
+
+    public HudElement getElement(String id) {
+        return elements.get(id);
+    }
 
     public void render(DrawContext context) {
         if (mc.player == null || mc.options.hudHidden) return;
-        if (mc.currentScreen != null) return;
 
         TextRenderer tr = mc.textRenderer;
         int sw = mc.getWindow().getScaledWidth();
         int sh = mc.getWindow().getScaledHeight();
 
-        int topLeftY = 4;
+        initDefaults(sw, sh);
 
-        // FPS
-        if (FPSDisplay.isActive()) {
-            int fps = mc.getCurrentFps();
-            String text = fps + " FPS";
-            drawTag(context, tr, text, 4, topLeftY, getFpsColor(fps));
-            topLeftY += 14;
-        }
+        if (mc.currentScreen instanceof HudEditorScreen) return;
+        if (mc.currentScreen != null) return;
 
-        // CPS
-        if (CPSCounter.isActive()) {
-            String text = "L: " + CPSCounter.getLeftCPS() + " | R: " + CPSCounter.getRightCPS();
-            drawTag(context, tr, text, 4, topLeftY, 0xFFCCCCCC);
-            topLeftY += 14;
-        }
+        if (FPSDisplay.isActive()) renderFPS(context, tr);
+        if (CPSCounter.isActive()) renderCPS(context, tr);
+        if (PingDisplay.isActive()) renderPing(context, tr);
+        if (SaturationDisplay.isActive()) renderSaturation(context, tr);
+        if (CoordinatesDisplay.isActive()) renderCoords(context, tr);
+        if (Timer.isActive()) renderTimer(context, tr);
+        if (ArmorHud.isActive()) renderArmor(context, tr);
+        if (FoodPreview.isActive()) renderFood(context, tr);
+        if (ShieldStatus.isActive()) renderShield(context, tr);
+        if (KeystrokesModule.isActive()) renderKeystrokes(context, tr);
+        if (CustomCrosshair.isActive()) renderCrosshair(context);
 
-        // Ping
-        if (PingDisplay.isActive()) {
-            int ping = PingDisplay.getPing();
-            int color = ping < 50 ? 0xFF00FF00 : ping < 100 ? 0xFFFFFF00 : 0xFFFF4444;
-            drawTag(context, tr, ping + "ms", 4, topLeftY, color);
-            topLeftY += 14;
-        }
-
-        // Saturation
-        if (SaturationDisplay.isActive()) {
-            float sat = mc.player.getHungerManager().getSaturationLevel();
-            int color = sat > 10 ? 0xFF00FF00 : sat > 5 ? 0xFFFFAA00 : 0xFFFF4444;
-            drawTag(context, tr, String.format("Sat: %.1f", sat), 4, topLeftY, color);
-            topLeftY += 14;
-        }
-
-        // Active modules list (top right)
-        renderActiveModules(context, tr, sw);
-
-        // Coordinates (bottom left)
-        if (CoordinatesDisplay.isActive()) {
-            renderCoordinates(context, tr, sh);
-        }
-
-        // Timer (top center)
-        if (Timer.isActive()) {
-            renderTimer(context, tr, sw);
-        }
-
-        // Armor HUD (right center)
-        if (ArmorHud.isActive()) {
-            renderArmorHud(context, tr, sw, sh);
-        }
-
-        // Food Preview (above hotbar)
-        if (FoodPreview.isActive()) {
-            renderFoodPreview(context, tr, sw, sh);
-        }
-
-        // Shield Status (near hotbar)
-        if (ShieldStatus.isActive()) {
-            renderShieldStatus(context, tr, sw, sh);
-        }
-
-        // Keystrokes (left center)
-        if (KeystrokesModule.isActive()) {
-            renderKeystrokes(context, tr, sh);
-        }
-
-        // Custom crosshair
-        if (CustomCrosshair.isActive()) {
-            renderCrosshair(context, sw, sh);
-        }
+        renderActiveModules(context, tr);
     }
 
-    private void drawTag(DrawContext ctx, TextRenderer tr, String text, int x, int y, int color) {
-        int w = tr.getWidth(text);
-        ctx.fill(x - 1, y - 1, x + w + 3, y + 10, 0x90000000);
-        ctx.drawTextWithShadow(tr, text, x + 1, y, color);
+    private void renderFPS(DrawContext ctx, TextRenderer tr) {
+        HudElement el = elements.get("fps");
+        int fps = mc.getCurrentFps();
+        String text = fps + " FPS";
+        el.setSize(tr.getWidth(text) + 4, 12);
+        drawTag(ctx, tr, text, el.getX(), el.getY(), getFpsColor(fps));
     }
 
-    private void renderActiveModules(DrawContext ctx, TextRenderer tr, int sw) {
-        List<Module> enabled = VasicClient.getInstance().getModuleManager().getEnabledModules();
-        int y = 4;
-        for (Module m : enabled) {
-            String name = m.getName();
-            int w = tr.getWidth(name);
-            int x = sw - w - 4;
-            ctx.fill(x - 2, y - 1, sw, y + 10, 0x80000000);
-            ctx.fill(sw - 1, y - 1, sw, y + 10, m.getCategory().getColor());
-            ctx.drawTextWithShadow(tr, name, x, y, 0xFFDDDDDD);
-            y += 12;
-        }
+    private void renderCPS(DrawContext ctx, TextRenderer tr) {
+        HudElement el = elements.get("cps");
+        String text = "L:" + CPSCounter.getLeftCPS() + " R:" + CPSCounter.getRightCPS();
+        el.setSize(tr.getWidth(text) + 4, 12);
+        drawTag(ctx, tr, text, el.getX(), el.getY(), 0xFFCCCCCC);
     }
 
-    private void renderCoordinates(DrawContext ctx, TextRenderer tr, int sh) {
-        String coords = String.format("X: %.1f  Y: %.1f  Z: %.1f",
+    private void renderPing(DrawContext ctx, TextRenderer tr) {
+        HudElement el = elements.get("ping");
+        int ping = PingDisplay.getPing();
+        String text = ping + "ms";
+        int color = ping < 50 ? 0xFF00FF00 : ping < 100 ? 0xFFFFFF00 : 0xFFFF4444;
+        el.setSize(tr.getWidth(text) + 4, 12);
+        drawTag(ctx, tr, text, el.getX(), el.getY(), color);
+    }
+
+    private void renderSaturation(DrawContext ctx, TextRenderer tr) {
+        HudElement el = elements.get("saturation");
+        float sat = mc.player.getHungerManager().getSaturationLevel();
+        String text = String.format("Sat: %.1f", sat);
+        int color = sat > 10 ? 0xFF00FF00 : sat > 5 ? 0xFFFFAA00 : 0xFFFF4444;
+        el.setSize(tr.getWidth(text) + 4, 12);
+        drawTag(ctx, tr, text, el.getX(), el.getY(), color);
+    }
+
+    private void renderCoords(DrawContext ctx, TextRenderer tr) {
+        HudElement el = elements.get("coords");
+        String line1 = String.format("X: %.1f  Y: %.1f  Z: %.1f",
                 mc.player.getX(), mc.player.getY(), mc.player.getZ());
-        String facing = getFacingDirection();
-
-        int y = sh - 26;
-        drawTag(ctx, tr, coords, 4, y, 0xFFFFFFFF);
-        drawTag(ctx, tr, facing, 4, y + 12, 0xFFAAAAAA);
+        String line2 = getFacingDirection();
+        int maxW = Math.max(tr.getWidth(line1), tr.getWidth(line2));
+        el.setSize(maxW + 6, 24);
+        drawTag(ctx, tr, line1, el.getX(), el.getY(), 0xFFFFFFFF);
+        drawTag(ctx, tr, line2, el.getX(), el.getY() + 12, 0xFFAAAAAA);
     }
 
-    private void renderTimer(DrawContext ctx, TextRenderer tr, int sw) {
+    private void renderTimer(DrawContext ctx, TextRenderer tr) {
+        HudElement el = elements.get("timer");
         long elapsed = System.currentTimeMillis() - sessionStartTime;
-        long s = (elapsed / 1000) % 60;
-        long m = (elapsed / 60000) % 60;
-        long h = elapsed / 3600000;
-
-        String time = String.format("%02d:%02d:%02d", h, m, s);
-        int w = tr.getWidth(time);
-        int x = (sw - w) / 2;
-        ctx.fill(x - 3, 2, x + w + 3, 14, 0x90000000);
-        ctx.drawTextWithShadow(tr, time, x, 4, 0xFFCCCCCC);
+        long s = (elapsed / 1000) % 60, m = (elapsed / 60000) % 60, h = elapsed / 3600000;
+        String text = String.format("%02d:%02d:%02d", h, m, s);
+        el.setSize(tr.getWidth(text) + 6, 12);
+        drawTag(ctx, tr, text, el.getX(), el.getY(), 0xFFCCCCCC);
     }
 
-    private void renderArmorHud(DrawContext ctx, TextRenderer tr, int sw, int sh) {
-        int x = sw - 22;
-        int y = sh / 2 - 44;
-
+    private void renderArmor(DrawContext ctx, TextRenderer tr) {
+        HudElement el = elements.get("armor");
+        int x = el.getX(), y = el.getY();
         EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
         for (EquipmentSlot slot : slots) {
             ItemStack stack = mc.player.getEquippedStack(slot);
@@ -156,34 +140,28 @@ public class HudRenderer {
                     int dur = stack.getMaxDamage() - stack.getDamage();
                     float ratio = (float) dur / stack.getMaxDamage();
                     int color = ratio > 0.5f ? 0xFF00FF00 : ratio > 0.25f ? 0xFFFFFF00 : 0xFFFF0000;
-                    String durText = String.valueOf(dur);
-                    ctx.drawTextWithShadow(tr, durText, x - tr.getWidth(durText) - 2, y + 4, color);
+                    ctx.drawTextWithShadow(tr, String.valueOf(dur), x + 18, y + 4, color);
                 }
             }
             y += 20;
         }
     }
 
-    private void renderFoodPreview(DrawContext ctx, TextRenderer tr, int sw, int sh) {
-        if (mc.player == null) return;
+    private void renderFood(DrawContext ctx, TextRenderer tr) {
+        HudElement el = elements.get("food");
         ItemStack held = mc.player.getMainHandStack();
         if (held.isEmpty()) return;
-
-        FoodComponent foodComp = held.get(DataComponentTypes.FOOD);
-        if (foodComp != null) {
-            int hunger = foodComp.nutrition();
-            String text = "+" + hunger + " hunger";
-            int w = tr.getWidth(text);
-            int x = sw / 2 - w / 2;
-            int y = sh - 56;
-            ctx.fill(x - 3, y - 2, x + w + 3, y + 11, 0xB0000000);
-            ctx.drawTextWithShadow(tr, text, x, y, 0xFFFFDD44);
-        }
+        FoodComponent food = held.get(DataComponentTypes.FOOD);
+        if (food == null) return;
+        String text = "+" + food.nutrition() + " hunger";
+        el.setSize(tr.getWidth(text) + 6, 14);
+        int x = el.getX(), y = el.getY();
+        ctx.fill(x - 3, y - 2, x + tr.getWidth(text) + 3, y + 11, 0xB0000000);
+        ctx.drawTextWithShadow(tr, text, x, y, 0xFFFFDD44);
     }
 
-    private void renderShieldStatus(DrawContext ctx, TextRenderer tr, int sw, int sh) {
-        if (mc.player == null) return;
-
+    private void renderShield(DrawContext ctx, TextRenderer tr) {
+        HudElement el = elements.get("shield");
         boolean hasShield = false;
         for (int i = 0; i < mc.player.getInventory().size(); i++) {
             if (mc.player.getInventory().getStack(i).isOf(Items.SHIELD)) {
@@ -192,79 +170,82 @@ public class HudRenderer {
             }
         }
         if (!hasShield) return;
-
         boolean blocking = mc.player.isBlocking();
         int color = blocking ? 0xFF44FF44 : 0xFFFF4444;
-        String text = blocking ? "SHIELD" : "SHIELD";
-
-        int x = sw / 2 + 100;
-        int y = sh - 42;
-
-        ctx.fill(x - 2, y - 2, x + tr.getWidth(text) + 4, y + 11, 0xB0000000);
+        int x = el.getX(), y = el.getY();
+        ctx.fill(x - 2, y - 2, x + tr.getWidth("SHIELD") + 4, y + 11, 0xB0000000);
         ctx.fill(x - 2, y - 2, x, y + 11, color);
-        ctx.drawTextWithShadow(tr, text, x + 2, y, color);
+        ctx.drawTextWithShadow(tr, "SHIELD", x + 2, y, color);
     }
 
-    private void renderKeystrokes(DrawContext ctx, TextRenderer tr, int sh) {
-        int baseX = 8;
-        int baseY = sh / 2 - 40;
-        int boxSize = 22;
-        int gap = 2;
+    private void renderKeystrokes(DrawContext ctx, TextRenderer tr) {
+        HudElement el = elements.get("keystrokes");
+        int bx = el.getX(), by = el.getY();
+        int box = 22, gap = 2;
 
         boolean w = mc.options.forwardKey.isPressed();
         boolean a = mc.options.leftKey.isPressed();
         boolean s = mc.options.backKey.isPressed();
         boolean d = mc.options.rightKey.isPressed();
-        boolean space = mc.options.jumpKey.isPressed();
+        boolean sp = mc.options.jumpKey.isPressed();
         boolean lmb = mc.options.attackKey.isPressed();
         boolean rmb = mc.options.useKey.isPressed();
 
-        // W
-        drawKey(ctx, tr, "W", baseX + boxSize + gap, baseY, boxSize, boxSize, w);
-        // A S D
-        drawKey(ctx, tr, "A", baseX, baseY + boxSize + gap, boxSize, boxSize, a);
-        drawKey(ctx, tr, "S", baseX + boxSize + gap, baseY + boxSize + gap, boxSize, boxSize, s);
-        drawKey(ctx, tr, "D", baseX + (boxSize + gap) * 2, baseY + boxSize + gap, boxSize, boxSize, d);
-        // Space
-        int spaceWidth = boxSize * 3 + gap * 2;
-        drawKey(ctx, tr, "---", baseX, baseY + (boxSize + gap) * 2, spaceWidth, 14, space);
-        // LMB RMB
-        int mouseWidth = (spaceWidth - gap) / 2;
-        drawKey(ctx, tr, "LMB", baseX, baseY + (boxSize + gap) * 2 + 16, mouseWidth, 16, lmb);
-        drawKey(ctx, tr, "RMB", baseX + mouseWidth + gap, baseY + (boxSize + gap) * 2 + 16, mouseWidth, 16, rmb);
+        drawKey(ctx, tr, "W", bx + box + gap, by, box, box, w);
+        drawKey(ctx, tr, "A", bx, by + box + gap, box, box, a);
+        drawKey(ctx, tr, "S", bx + box + gap, by + box + gap, box, box, s);
+        drawKey(ctx, tr, "D", bx + (box + gap) * 2, by + box + gap, box, box, d);
+        int spW = box * 3 + gap * 2;
+        drawKey(ctx, tr, "---", bx, by + (box + gap) * 2, spW, 14, sp);
+        int mW = (spW - gap) / 2;
+        drawKey(ctx, tr, "LMB", bx, by + (box + gap) * 2 + 16, mW, 16, lmb);
+        drawKey(ctx, tr, "RMB", bx + mW + gap, by + (box + gap) * 2 + 16, mW, 16, rmb);
     }
 
-    private void drawKey(DrawContext ctx, TextRenderer tr, String label, int x, int y, int w, int h, boolean pressed) {
-        int bg = pressed ? 0xDD26C6DA : 0xAA1A1A2E;
-        int textColor = pressed ? 0xFF000000 : 0xFFCCCCCC;
-        ctx.fill(x, y, x + w, y + h, bg);
-        ctx.fill(x, y, x + w, y + 1, 0x40FFFFFF);
-        int tx = x + (w - tr.getWidth(label)) / 2;
-        int ty = y + (h - 8) / 2;
-        ctx.drawTextWithShadow(tr, label, tx, ty, textColor);
-    }
-
-    private void renderCrosshair(DrawContext ctx, int sw, int sh) {
-        int cx = sw / 2;
-        int cy = sh / 2;
+    private void renderCrosshair(DrawContext ctx) {
+        HudElement el = elements.get("crosshair");
+        int cx = el.getX() + el.getWidth() / 2;
+        int cy = el.getY() + el.getHeight() / 2;
         int color = CustomCrosshair.getColor();
         int size = CustomCrosshair.getSize();
         int g = CustomCrosshair.getGap();
-        int t = CustomCrosshair.getThickness();
 
-        // Top
-        ctx.fill(cx - t / 2, cy - g - size, cx + t / 2 + 1, cy - g, color);
-        // Bottom
-        ctx.fill(cx - t / 2, cy + g + 1, cx + t / 2 + 1, cy + g + size + 1, color);
-        // Left
-        ctx.fill(cx - g - size, cy - t / 2, cx - g, cy + t / 2 + 1, color);
-        // Right
-        ctx.fill(cx + g + 1, cy - t / 2, cx + g + size + 1, cy + t / 2 + 1, color);
+        ctx.fill(cx, cy - g - size, cx + 1, cy - g, color);
+        ctx.fill(cx, cy + g + 1, cx + 1, cy + g + size + 1, color);
+        ctx.fill(cx - g - size, cy, cx - g, cy + 1, color);
+        ctx.fill(cx + g + 1, cy, cx + g + size + 1, cy + 1, color);
+        if (CustomCrosshair.hasDot()) ctx.fill(cx, cy, cx + 1, cy + 1, color);
+    }
 
-        // Center dot
-        if (CustomCrosshair.hasDot()) {
-            ctx.fill(cx, cy, cx + 1, cy + 1, color);
+    private void renderActiveModules(DrawContext ctx, TextRenderer tr) {
+        HudElement el = elements.get("modules");
+        List<Module> enabled = VasicClient.getInstance().getModuleManager().getEnabledModules();
+        int x = el.getX(), y = el.getY();
+        int maxW = 0;
+        for (Module m : enabled) {
+            String name = m.getName();
+            int w = tr.getWidth(name);
+            if (w > maxW) maxW = w;
+            ctx.fill(x - 2, y - 1, x + w + 4, y + 10, 0x80000000);
+            ctx.fill(x + w + 3, y - 1, x + w + 4, y + 10, m.getCategory().getColor());
+            ctx.drawTextWithShadow(tr, name, x, y, 0xFFDDDDDD);
+            y += 12;
         }
+        el.setSize(maxW + 6, Math.max(enabled.size() * 12, 12));
+    }
+
+    private void drawTag(DrawContext ctx, TextRenderer tr, String text, int x, int y, int color) {
+        int w = tr.getWidth(text);
+        ctx.fill(x - 1, y - 1, x + w + 3, y + 10, 0x90000000);
+        ctx.drawTextWithShadow(tr, text, x + 1, y, color);
+    }
+
+    private void drawKey(DrawContext ctx, TextRenderer tr, String label, int x, int y, int w, int h, boolean pressed) {
+        ctx.fill(x, y, x + w, y + h, pressed ? 0xDD26C6DA : 0xAA1A1A2E);
+        ctx.fill(x, y, x + w, y + 1, 0x40FFFFFF);
+        int tx = x + (w - tr.getWidth(label)) / 2;
+        int ty = y + (h - 8) / 2;
+        ctx.drawTextWithShadow(tr, label, tx, ty, pressed ? 0xFF000000 : 0xFFCCCCCC);
     }
 
     private int getFpsColor(int fps) {

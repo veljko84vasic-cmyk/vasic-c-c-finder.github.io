@@ -1,6 +1,7 @@
 package com.vasic.client.gui;
 
 import com.vasic.client.VasicClient;
+import com.vasic.client.hud.HudEditorScreen;
 import com.vasic.client.module.Category;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -12,6 +13,7 @@ import java.util.List;
 public class ClickGui extends Screen {
 
     private final List<CategoryPanel> panels = new ArrayList<>();
+    private int hudButtonX, hudButtonY, hudButtonW, hudButtonH;
 
     public ClickGui() {
         super(Text.literal("Vasic Client"));
@@ -31,15 +33,27 @@ public class ClickGui extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // Dark overlay
         context.fill(0, 0, width, height, 0xB0000000);
 
-        // Title bar
+        // Title
         String title = VasicClient.NAME;
         String version = "v" + VasicClient.VERSION;
-        context.drawTextWithShadow(textRenderer, title, width / 2 - textRenderer.getWidth(title) / 2, 12, 0xFF26C6DA);
+        context.drawTextWithShadow(textRenderer, title, width / 2 - textRenderer.getWidth(title) / 2, 10, 0xFF26C6DA);
         context.drawTextWithShadow(textRenderer, version,
-                width / 2 + textRenderer.getWidth(title) / 2 + 4, 12, 0xFF666666);
+                width / 2 + textRenderer.getWidth(title) / 2 + 4, 10, 0xFF666666);
+
+        // Edit HUD button
+        String hudText = "[ Edit HUD Layout ]";
+        hudButtonW = textRenderer.getWidth(hudText) + 8;
+        hudButtonH = 14;
+        hudButtonX = width / 2 - hudButtonW / 2;
+        hudButtonY = 24;
+        boolean hudHovered = mouseX >= hudButtonX && mouseX <= hudButtonX + hudButtonW
+                && mouseY >= hudButtonY && mouseY <= hudButtonY + hudButtonH;
+        context.fill(hudButtonX, hudButtonY, hudButtonX + hudButtonW, hudButtonY + hudButtonH,
+                hudHovered ? 0x60FFFFFF : 0x30FFFFFF);
+        context.drawTextWithShadow(textRenderer, hudText, hudButtonX + 4, hudButtonY + 3,
+                hudHovered ? 0xFF26C6DA : 0xFF999999);
 
         for (CategoryPanel panel : panels) {
             panel.render(context, mouseX, mouseY, textRenderer);
@@ -48,6 +62,13 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Check Edit HUD button
+        if (button == 0 && mouseX >= hudButtonX && mouseX <= hudButtonX + hudButtonW
+                && mouseY >= hudButtonY && mouseY <= hudButtonY + hudButtonH) {
+            client.setScreen(new HudEditorScreen());
+            return true;
+        }
+
         for (CategoryPanel panel : panels) {
             if (panel.mouseClicked(mouseX, mouseY, button)) {
                 return true;

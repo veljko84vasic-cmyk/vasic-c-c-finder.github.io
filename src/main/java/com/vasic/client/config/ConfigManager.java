@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.vasic.client.VasicClient;
+import com.vasic.client.hud.HudElement;
 import com.vasic.client.module.Module;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -23,16 +24,26 @@ public class ConfigManager {
 
     public void save() {
         JsonObject root = new JsonObject();
+
+        // Save modules
         JsonObject modules = new JsonObject();
-
         for (Module module : VasicClient.getInstance().getModuleManager().getModules()) {
-            JsonObject moduleObj = new JsonObject();
-            moduleObj.addProperty("enabled", module.isEnabled());
-            moduleObj.addProperty("keyBind", module.getKeyBind());
-            modules.add(module.getName(), moduleObj);
+            JsonObject obj = new JsonObject();
+            obj.addProperty("enabled", module.isEnabled());
+            obj.addProperty("keyBind", module.getKeyBind());
+            modules.add(module.getName(), obj);
         }
-
         root.add("modules", modules);
+
+        // Save HUD positions
+        JsonObject hud = new JsonObject();
+        for (HudElement el : VasicClient.getInstance().getHudRenderer().getElements()) {
+            JsonObject obj = new JsonObject();
+            obj.addProperty("x", el.getX());
+            obj.addProperty("y", el.getY());
+            hud.add(el.getId(), obj);
+        }
+        root.add("hud", hud);
 
         try {
             Files.writeString(configFile, GSON.toJson(root));
@@ -48,17 +59,29 @@ public class ConfigManager {
             String json = Files.readString(configFile);
             JsonObject root = JsonParser.parseString(json).getAsJsonObject();
 
+            // Load modules
             if (root.has("modules")) {
                 JsonObject modules = root.getAsJsonObject("modules");
                 for (Module module : VasicClient.getInstance().getModuleManager().getModules()) {
                     if (modules.has(module.getName())) {
-                        JsonObject moduleObj = modules.getAsJsonObject(module.getName());
-                        if (moduleObj.has("enabled") && moduleObj.get("enabled").getAsBoolean()) {
+                        JsonObject obj = modules.getAsJsonObject(module.getName());
+                        if (obj.has("enabled") && obj.get("enabled").getAsBoolean()) {
                             module.setEnabled(true);
                         }
-                        if (moduleObj.has("keyBind")) {
-                            module.setKeyBind(moduleObj.get("keyBind").getAsInt());
+                        if (obj.has("keyBind")) {
+                            module.setKeyBind(obj.get("keyBind").getAsInt());
                         }
+                    }
+                }
+            }
+
+            // Load HUD positions
+            if (root.has("hud")) {
+                JsonObject hud = root.getAsJsonObject("hud");
+                for (HudElement el : VasicClient.getInstance().getHudRenderer().getElements()) {
+                    if (hud.has(el.getId())) {
+                        JsonObject obj = hud.getAsJsonObject(el.getId());
+                        el.setPosition(obj.get("x").getAsInt(), obj.get("y").getAsInt());
                     }
                 }
             }
