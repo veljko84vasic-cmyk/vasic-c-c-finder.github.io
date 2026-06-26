@@ -2,6 +2,7 @@ package com.vasic.client.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.vasic.client.VasicClient;
@@ -46,15 +47,18 @@ public class ConfigManager {
         }
         root.add("hud", hud);
 
-        // Save crosshair settings
+        // Save crosshair pixel grid
         JsonObject crosshair = new JsonObject();
-        crosshair.addProperty("size", CustomCrosshair.getSize());
-        crosshair.addProperty("gap", CustomCrosshair.getGap());
-        crosshair.addProperty("thickness", CustomCrosshair.getThickness());
-        crosshair.addProperty("dot", CustomCrosshair.hasDot());
-        crosshair.addProperty("red", CustomCrosshair.getRed());
-        crosshair.addProperty("green", CustomCrosshair.getGreen());
-        crosshair.addProperty("blue", CustomCrosshair.getBlue());
+        int[][] pixels = CustomCrosshair.getPixels();
+        JsonArray grid = new JsonArray();
+        for (int[] row : pixels) {
+            JsonArray rowArr = new JsonArray();
+            for (int pixel : row) {
+                rowArr.add(pixel);
+            }
+            grid.add(rowArr);
+        }
+        crosshair.add("grid", grid);
         root.add("crosshair", crosshair);
 
         // Save username
@@ -108,16 +112,21 @@ public class ConfigManager {
                 VasicClient.setCustomUsername(root.get("username").getAsString());
             }
 
-            // Load crosshair settings
+            // Load crosshair pixel grid
             if (root.has("crosshair")) {
                 JsonObject ch = root.getAsJsonObject("crosshair");
-                if (ch.has("size")) CustomCrosshair.setSize(ch.get("size").getAsInt());
-                if (ch.has("gap")) CustomCrosshair.setGap(ch.get("gap").getAsInt());
-                if (ch.has("thickness")) CustomCrosshair.setThickness(ch.get("thickness").getAsInt());
-                if (ch.has("dot")) CustomCrosshair.setDot(ch.get("dot").getAsBoolean());
-                if (ch.has("red")) CustomCrosshair.setRed(ch.get("red").getAsInt());
-                if (ch.has("green")) CustomCrosshair.setGreen(ch.get("green").getAsInt());
-                if (ch.has("blue")) CustomCrosshair.setBlue(ch.get("blue").getAsInt());
+                if (ch.has("grid")) {
+                    JsonArray grid = ch.getAsJsonArray("grid");
+                    int gs = CustomCrosshair.GRID_SIZE;
+                    int[][] pixels = new int[gs][gs];
+                    for (int r = 0; r < Math.min(gs, grid.size()); r++) {
+                        JsonArray row = grid.get(r).getAsJsonArray();
+                        for (int c = 0; c < Math.min(gs, row.size()); c++) {
+                            pixels[r][c] = row.get(c).getAsInt();
+                        }
+                    }
+                    CustomCrosshair.setPixels(pixels);
+                }
             }
         } catch (Exception e) {
             System.err.println("[Vasic Client] Failed to load config: " + e.getMessage());

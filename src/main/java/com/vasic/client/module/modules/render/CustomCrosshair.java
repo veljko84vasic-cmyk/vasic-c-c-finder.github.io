@@ -6,16 +6,13 @@ import org.lwjgl.glfw.GLFW;
 
 public class CustomCrosshair extends Module {
 
+    public static final int GRID_SIZE = 15;
     private static boolean active = false;
-    private static int color = 0xFFFFFFFF;
-    private static int size = 6;
-    private static int gap = 3;
-    private static int thickness = 1;
-    private static boolean dot = true;
-    private static int red = 255, green = 255, blue = 255;
+    private static int[][] pixels = new int[GRID_SIZE][GRID_SIZE];
 
     public CustomCrosshair() {
         super("Crosshair", "Custom crosshair overlay", Category.RENDER, GLFW.GLFW_KEY_UNKNOWN);
+        loadDefaultCross();
     }
 
     @Override
@@ -25,36 +22,42 @@ public class CustomCrosshair extends Module {
     public void onDisable() { active = false; }
 
     public static boolean isActive() { return active; }
-    public static int getColor() { return color; }
-    public static int getSize() { return size; }
-    public static int getGap() { return gap; }
-    public static int getThickness() { return thickness; }
-    public static boolean hasDot() { return dot; }
-    public static int getRed() { return red; }
-    public static int getGreen() { return green; }
-    public static int getBlue() { return blue; }
 
-    public static void setSize(int v) { size = Math.max(1, Math.min(20, v)); }
-    public static void setGap(int v) { gap = Math.max(0, Math.min(15, v)); }
-    public static void setThickness(int v) { thickness = Math.max(1, Math.min(5, v)); }
-    public static void setDot(boolean v) { dot = v; }
+    public static int[][] getPixels() { return pixels; }
 
-    public static void setRed(int v) {
-        red = Math.max(0, Math.min(255, v));
-        updateColor();
+    public static int getPixel(int row, int col) {
+        if (row < 0 || row >= GRID_SIZE || col < 0 || col >= GRID_SIZE) return 0;
+        return pixels[row][col];
     }
 
-    public static void setGreen(int v) {
-        green = Math.max(0, Math.min(255, v));
-        updateColor();
+    public static void setPixel(int row, int col, int color) {
+        if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
+            pixels[row][col] = color;
+        }
     }
 
-    public static void setBlue(int v) {
-        blue = Math.max(0, Math.min(255, v));
-        updateColor();
+    public static void clearPixel(int row, int col) {
+        setPixel(row, col, 0);
     }
 
-    private static void updateColor() {
-        color = 0xFF000000 | (red << 16) | (green << 8) | blue;
+    public static void clearAll() {
+        pixels = new int[GRID_SIZE][GRID_SIZE];
+    }
+
+    public static void setPixels(int[][] newPixels) {
+        if (newPixels != null && newPixels.length == GRID_SIZE) {
+            pixels = newPixels;
+        }
+    }
+
+    public static void loadDefaultCross() {
+        clearAll();
+        int c = 0xFFFFFFFF;
+        int mid = GRID_SIZE / 2;
+        for (int i = mid - 4; i < mid; i++) pixels[i][mid] = c;
+        for (int i = mid + 1; i <= mid + 4; i++) pixels[i][mid] = c;
+        for (int j = mid - 4; j < mid; j++) pixels[mid][j] = c;
+        for (int j = mid + 1; j <= mid + 4; j++) pixels[mid][j] = c;
+        pixels[mid][mid] = c;
     }
 }

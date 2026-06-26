@@ -45,7 +45,7 @@ public class HudRenderer {
         elements.put("shield", new HudElement("shield", "Shield", "ShieldStatus", sw / 2 + 98, sh - 44, 55, 14));
         elements.put("keystrokes", new HudElement("keystrokes", "Keystrokes", "Keystrokes", 8, sh / 2 - 48, 70, 96));
         elements.put("modules", new HudElement("modules", "Modules", "", sw - 90, 4, 88, 120));
-        elements.put("crosshair", new HudElement("crosshair", "Crosshair", "Crosshair", sw / 2 - 8, sh / 2 - 8, 16, 16));
+        elements.put("crosshair", new HudElement("crosshair", "Crosshair", "Crosshair", sw / 2 - 7, sh / 2 - 7, 15, 15));
     }
 
     public Collection<HudElement> getElements() {
@@ -212,19 +212,20 @@ public class HudRenderer {
 
     private void renderCrosshair(DrawContext ctx) {
         HudElement el = elements.get("crosshair");
+        int gs = CustomCrosshair.GRID_SIZE;
+        int mid = gs / 2;
         int cx = el.getX() + el.getWidth() / 2;
         int cy = el.getY() + el.getHeight() / 2;
-        int color = CustomCrosshair.getColor();
-        int size = CustomCrosshair.getSize();
-        int g = CustomCrosshair.getGap();
-        int t = CustomCrosshair.getThickness();
-        int half = t / 2;
-
-        ctx.fill(cx - half, cy - g - size, cx - half + t, cy - g, color);
-        ctx.fill(cx - half, cy + g + 1, cx - half + t, cy + g + size + 1, color);
-        ctx.fill(cx - g - size, cy - half, cx - g, cy - half + t, color);
-        ctx.fill(cx + g + 1, cy - half, cx + g + size + 1, cy - half + t, color);
-        if (CustomCrosshair.hasDot()) ctx.fill(cx - half, cy - half, cx - half + t, cy - half + t, color);
+        for (int r = 0; r < gs; r++) {
+            for (int c = 0; c < gs; c++) {
+                int pixel = CustomCrosshair.getPixel(r, c);
+                if (pixel != 0) {
+                    int px = cx + (c - mid);
+                    int py = cy + (r - mid);
+                    ctx.fill(px, py, px + 1, py + 1, pixel);
+                }
+            }
+        }
     }
 
     private void renderActiveModules(DrawContext ctx, TextRenderer tr) {
