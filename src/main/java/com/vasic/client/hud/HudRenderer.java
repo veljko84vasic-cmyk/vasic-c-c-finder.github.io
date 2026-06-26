@@ -217,12 +217,14 @@ public class HudRenderer {
         int color = CustomCrosshair.getColor();
         int size = CustomCrosshair.getSize();
         int g = CustomCrosshair.getGap();
+        int t = CustomCrosshair.getThickness();
+        int half = t / 2;
 
-        ctx.fill(cx, cy - g - size, cx + 1, cy - g, color);
-        ctx.fill(cx, cy + g + 1, cx + 1, cy + g + size + 1, color);
-        ctx.fill(cx - g - size, cy, cx - g, cy + 1, color);
-        ctx.fill(cx + g + 1, cy, cx + g + size + 1, cy + 1, color);
-        if (CustomCrosshair.hasDot()) ctx.fill(cx, cy, cx + 1, cy + 1, color);
+        ctx.fill(cx - half, cy - g - size, cx - half + t, cy - g, color);
+        ctx.fill(cx - half, cy + g + 1, cx - half + t, cy + g + size + 1, color);
+        ctx.fill(cx - g - size, cy - half, cx - g, cy - half + t, color);
+        ctx.fill(cx + g + 1, cy - half, cx + g + size + 1, cy - half + t, color);
+        if (CustomCrosshair.hasDot()) ctx.fill(cx - half, cy - half, cx - half + t, cy - half + t, color);
     }
 
     private void renderActiveModules(DrawContext ctx, TextRenderer tr) {

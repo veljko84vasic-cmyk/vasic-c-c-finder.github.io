@@ -18,6 +18,7 @@ loom {
     runs {
         client {
             runDir "run"
+            programArgs "--username", "vasic_x"
         }
     }
 }

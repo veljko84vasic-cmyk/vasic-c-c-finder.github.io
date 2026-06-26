@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.vasic.client.VasicClient;
 import com.vasic.client.hud.HudElement;
 import com.vasic.client.module.Module;
+import com.vasic.client.module.modules.render.CustomCrosshair;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
@@ -44,6 +45,17 @@ public class ConfigManager {
             hud.add(el.getId(), obj);
         }
         root.add("hud", hud);
+
+        // Save crosshair settings
+        JsonObject crosshair = new JsonObject();
+        crosshair.addProperty("size", CustomCrosshair.getSize());
+        crosshair.addProperty("gap", CustomCrosshair.getGap());
+        crosshair.addProperty("thickness", CustomCrosshair.getThickness());
+        crosshair.addProperty("dot", CustomCrosshair.hasDot());
+        crosshair.addProperty("red", CustomCrosshair.getRed());
+        crosshair.addProperty("green", CustomCrosshair.getGreen());
+        crosshair.addProperty("blue", CustomCrosshair.getBlue());
+        root.add("crosshair", crosshair);
 
         try {
             Files.writeString(configFile, GSON.toJson(root));
@@ -84,6 +96,17 @@ public class ConfigManager {
                         el.setPosition(obj.get("x").getAsInt(), obj.get("y").getAsInt());
                     }
                 }
+            }
+            // Load crosshair settings
+            if (root.has("crosshair")) {
+                JsonObject ch = root.getAsJsonObject("crosshair");
+                if (ch.has("size")) CustomCrosshair.setSize(ch.get("size").getAsInt());
+                if (ch.has("gap")) CustomCrosshair.setGap(ch.get("gap").getAsInt());
+                if (ch.has("thickness")) CustomCrosshair.setThickness(ch.get("thickness").getAsInt());
+                if (ch.has("dot")) CustomCrosshair.setDot(ch.get("dot").getAsBoolean());
+                if (ch.has("red")) CustomCrosshair.setRed(ch.get("red").getAsInt());
+                if (ch.has("green")) CustomCrosshair.setGreen(ch.get("green").getAsInt());
+                if (ch.has("blue")) CustomCrosshair.setBlue(ch.get("blue").getAsInt());
             }
         } catch (Exception e) {
             System.err.println("[Vasic Client] Failed to load config: " + e.getMessage());
