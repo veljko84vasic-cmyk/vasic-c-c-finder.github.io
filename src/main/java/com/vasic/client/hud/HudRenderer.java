@@ -2,7 +2,15 @@ package com.vasic.client.hud;
 
 import com.vasic.client.VasicClient;
 import com.vasic.client.module.Module;
-import com.vasic.client.module.modules.misc.*;
+import com.vasic.client.module.modules.misc.FPSDisplay;
+import com.vasic.client.module.modules.misc.CPSCounter;
+import com.vasic.client.module.modules.misc.PingDisplay;
+import com.vasic.client.module.modules.misc.KeystrokesModule;
+import com.vasic.client.module.modules.misc.CoordinatesDisplay;
+import com.vasic.client.module.modules.misc.ArmorHud;
+import com.vasic.client.module.modules.misc.SaturationDisplay;
+import com.vasic.client.module.modules.misc.FoodPreview;
+import com.vasic.client.module.modules.misc.ShieldStatus;
 import com.vasic.client.module.modules.render.CustomCrosshair;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -65,7 +73,7 @@ public class HudRenderer {
         if (PingDisplay.isActive()) renderPing(context, tr);
         if (SaturationDisplay.isActive()) renderSaturation(context, tr);
         if (CoordinatesDisplay.isActive()) renderCoords(context, tr);
-        if (Timer.isActive()) renderTimer(context, tr);
+        if (com.vasic.client.module.modules.misc.Timer.isActive()) renderTimer(context, tr);
         if (ArmorHud.isActive()) renderArmor(context, tr);
         if (FoodPreview.isActive()) renderFood(context, tr);
         if (ShieldStatus.isActive()) renderShield(context, tr);
